@@ -11,9 +11,8 @@ export default function ScreenWrap ({children, background}){
         <View style={{ 
             flex: 1, // ensures it takes the full space
             paddingTop,
-            backgroundColor: background
+            backgroundColor: background || 'white'
           }}>
-            <Text>Test</Text>
             {children}
         </View>
     )
