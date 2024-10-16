@@ -1,6 +1,6 @@
 import {View, Text, Image, StyleSheet} from 'react-native';
 import React from 'react';
-import {ScreenWrap} from '../components/ScreenWrap.jsx';
+import ScreenWrap from '../components/ScreenWrap.jsx';
 import {StatusBar} from 'expo-status-bar';
 import { widthP,heightP } from '../style/deviceSpecs.js';
 import { theme } from '../style/theme.js';
