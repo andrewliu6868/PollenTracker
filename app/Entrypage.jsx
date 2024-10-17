@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View, StyleSheet, Image, Pressable } from 'react-native';
+import { Text, View, StyleSheet, Image, Pressable, Linking} from 'react-native';
 import { useRouter } from 'expo-router';
 import ScreenWrap from '../components/ScreenWrap.jsx';
 import Button from '../components/Button.jsx';
@@ -24,7 +24,7 @@ export default function Entrypage(){
                     <Button text = "Sign Up" buttonStyle = {{marginHorizontal:widthP(2)}} onPress={() => router.push('/Login')}/>
                     <View style={[styles.smallText, {color: theme.colors.primaryDark, fontWeight: theme.fonts.semibold}]}>
                         <Text>If you already have an account,</Text>
-                        <Pressable onPress = {() => router.push('/SignUp')}>
+                        <Pressable onPress = {() => router.push('SignUp')}>
                             <Text> login here!</Text>
                         </Pressable>
                     </View>

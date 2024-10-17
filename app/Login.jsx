@@ -22,7 +22,7 @@ export default function Login() {
     const onSubmit = async() =>{
         // check if all fields are filled in
         if(!emailRef.current || !passRef.current){
-            Alert.alert('Login', 'Please fill in all fields!');
+            Alert.alert('Login Error', 'Please fill in all fields!');
             return;
         }
 
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: widthP(3)
     },
     titleText:{
-        fontSize: heightP(5),
+        fontSize: heightP(3.5),
         fontWeight: theme.fonts.bold,
         color: theme.colors.text
     },
