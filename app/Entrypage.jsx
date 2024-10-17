@@ -1,6 +1,6 @@
 import React from 'react';
-import {Text, View, StyleSheet, Image, Pressable } from 'react-native';
-import {useRouter} from 'expo-router';
+import { Text, View, StyleSheet, Image, Pressable, Linking} from 'react-native';
+import { useRouter } from 'expo-router';
 import ScreenWrap from '../components/ScreenWrap.jsx';
 import Button from '../components/Button.jsx';
 import { StatusBar } from 'expo-status-bar';
@@ -14,7 +14,7 @@ export default function Entrypage(){
         <ScreenWrap bg="white">
             <StatusBar style ="dark"/>
             <View style={styles.container}>
-                <Image style={styles.mainImage} source={require('../assets/welcome.png')}/>
+                <Image style={styles.mainImage} source={require('../assets/EntryImage.png')}/>
                 <View style={{gap: 15}}>
                     <Text style={styles.title}> AllergyTracker</Text>
                     <Text style={styles.caption}> Sign up and breathe easier with personalized allergy tracking at your fingertips </Text>
@@ -23,10 +23,15 @@ export default function Entrypage(){
                 <View style={styles.bStyle}>
                     <Button text = "Sign Up" buttonStyle = {{marginHorizontal:widthP(2)}} onPress={() => router.push('/Login')}/>
                     <View style={[styles.smallText, {color: theme.colors.primaryDark, fontWeight: theme.fonts.semibold}]}>
-                        <Pressable onPress = {() => router.push('/SignUp')}>
-                            <Text>If you already have an account, login here!</Text>
+                        <Text>If you already have an account,</Text>
+                        <Pressable onPress = {() => router.push('SignUp')}>
+                            <Text> login here!</Text>
                         </Pressable>
                     </View>
+                </View>
+
+                <View style={styles.attribContainer}>
+                    <Text style={styles.attribText} onPress={() => {Linking.openURL('https://storyset.com/elderly')}}>Elderly illustrations by Storyset</Text>
                 </View>
             </View>
         </ScreenWrap>
@@ -68,5 +73,14 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: heightP(0.5),
         flexDirection: 'row'
+    },
+    attribContainer:{
+        marginTop: heightP(5),
+        paddingHorizontal: widthP(5)
+    },  
+    attribText: {
+        fontSize: heightP(1.5),
+        color: theme.colors.text,
+        textAlign: 'center',
     }
 })
