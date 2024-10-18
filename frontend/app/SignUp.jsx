@@ -23,7 +23,6 @@ export default function SignUp() {
   const fnRef = useRef("");
   const lnRef = useRef("");
 
-
   const onSubmit = async() =>{
     // check if all fields are filled in
     if(!emailRef.current || !passRef.current){
