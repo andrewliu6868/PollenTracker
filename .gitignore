@@ -33,3 +33,9 @@ frontend/.env*.local
 
 # typescript
 frontend/*.tsbuildinfo
+
+# virtual environment
+backend/myenv/
+
+# environment variables
+.env
