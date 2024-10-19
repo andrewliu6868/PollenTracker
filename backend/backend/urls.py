@@ -16,8 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import HttpResponseRedirect
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('allergy_tracker/', include('allergy_tracker.urls'))
+    path('allergy_tracker/', include('allergy_tracker.urls')),
+    path('', lambda request: HttpResponseRedirect('/allergy_tracker/')),  # Redirect root URL to allergy_tracker
+
 ]
