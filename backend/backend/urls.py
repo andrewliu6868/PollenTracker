@@ -16,11 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.http import HttpResponseRedirect
+from allergy_tracker.views import CreateUserView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('allergy_tracker/', include('allergy_tracker.urls')),
-    path('', lambda request: HttpResponseRedirect('/allergy_tracker/')),  # Redirect root URL to allergy_tracker
-
+    path('allergy_tracker/', include('allergy_tracker.urls')),    
+    # authentication urls
+    path("allergy_tracker/user/register/", CreateUserView.as_view(), name="register"),
+    path("allergy_tracker/token/", TokenObtainPairView.as_view(), name="get_token"),
+    path("allergy_tracker/token/refresh/",TokenRefreshView.as_view(), name="refresh"),
+    path("allergy_tracker-auth/", include("rest_framework.urls")),  
 ]
