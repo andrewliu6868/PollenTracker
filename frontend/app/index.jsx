@@ -9,7 +9,6 @@ const router = useRouter();
     <ScreenWrap>
         <View>
             <Text>Loading Screen</Text>
-            <Button title="Go to Home" onPress={() => router.push('/Homepage')}></Button>
             <Button title="Welcome!" onPress={() => router.push('/Entrypage')}></Button>
         </View>
     </ScreenWrap>
