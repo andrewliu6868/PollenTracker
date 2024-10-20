@@ -25,9 +25,14 @@ export default function SignUp() {
 
   const onSubmit = async() =>{
     // check if all fields are filled in
-    if(!emailRef.current || !passRef.current){
+    if(!emailRef.current || !passRef.current || !fnRef.current || !lnRef.current){
         Alert.alert('Sign Up Error!', 'Please fill in all fields!');
         return;
+        // add posting to API endpoints once setup
+    }else{
+      // for now just direct to home page without authentication
+      router.push('/Home')
+      return;
     }
   }
   return (
@@ -41,13 +46,13 @@ export default function SignUp() {
         </Text>
 
         <View style = {styles.spacing}>
-            <CustomInput icon = {<Email strokeWidth = {0.75} iconColor={theme.colors.gray} />} placeholder = "Enter your email" onChangeText={()=>emailRef.current}/>
-            <CustomInput icon = {<Password strokeWidth = {0.75} iconColor={theme.colors.gray}/>} placeholder = "Enter your password" onChangeText={()=> passRef.current}/>
-            <CustomInput icon = {<UserIcon strokeWidth = {0.75} iconColor={theme.colors.gray}/>} placeholder = "Enter your first name" onChangeText={()=> fnRef.current}/>
-            <CustomInput icon = {<UserIcon strokeWidth = {0.75} iconColor={theme.colors.gray}/>} placeholder = "Enter your last name" onChangeText={()=> lnRef.current}/>
+            <CustomInput icon = {<Email strokeWidth = {0.75} iconColor={theme.colors.gray} />} placeholder = "Enter your email" onChangeText={(text)=>{emailRef.current = text}}/>
+            <CustomInput icon = {<Password strokeWidth = {0.75} iconColor={theme.colors.gray}/>} placeholder = "Enter your password" onChangeText={(text)=> {passRef.current = text}}/>
+            <CustomInput icon = {<UserIcon strokeWidth = {0.75} iconColor={theme.colors.gray}/>} placeholder = "Enter your first name" onChangeText={(text)=> {fnRef.current = text}}/>
+            <CustomInput icon = {<UserIcon strokeWidth = {0.75} iconColor={theme.colors.gray}/>} placeholder = "Enter your last name" onChangeText={(text)=> {lnRef.current = text}}/>
         </View>
 
-        <Button titleText="Submit" loading={loading} onSubmit = {onSubmit}/>
+        <Button text="Submit" loading={loading} onSubmit = {onSubmit}/>
       </View>
 
     </ScreenWrap>
