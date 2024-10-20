@@ -1,8 +1,8 @@
-from django.urls import path
-from . import views
+from django.urls import path, include
+from allergy_tracker.views import CreateUserView
+
 
 # maps URLs to views
 urlpatterns = [
-    path('', views.home, name='home'),  
     # add app's URL patterns here later
 ]
