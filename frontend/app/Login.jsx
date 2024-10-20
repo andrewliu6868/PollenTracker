@@ -24,8 +24,11 @@ export default function Login() {
         if(!emailRef.current || !passRef.current){
             Alert.alert('Login Error', 'Please fill in all fields!');
             return;
+        }else{
+            // for now just direct to home page without authentication
+            router.push('/Home')
+            return;
         }
-
     }
   return (
     <ScreenWrap>
@@ -36,10 +39,10 @@ export default function Login() {
                 <Text style={styles.titleText}>Welcome Back!</Text>
             </View>
             <View style={styles.spacing}>
-                <CustomInput icon = {<Email strokeWidth = {0.75} iconColor={theme.colors.gray} />} placeholder = "Enter your email" onChangeText={()=>emailRef.current}/>
-                <CustomInput icon = {<Password strokeWidth = {0.75} iconColor={theme.colors.gray}/>} placeholder = "Enter your password" onChangeText={()=> passRef.current}/>
+                <CustomInput icon = {<Email strokeWidth = {0.75} iconColor={theme.colors.gray} />} placeholder = "Enter your email" onChangeText={(text)=>{emailRef.current = text}}/>
+                <CustomInput icon = {<Password strokeWidth = {0.75} iconColor={theme.colors.gray}/>} placeholder = "Enter your password" onChangeText={(text)=> {passRef.current = text}}/>
                 <Text style={styles.noPassword}> Can't remember your password?</Text>
-                <Button titleText="Submit" loading={loading} onPress={onSubmit}/>
+                <Button text="Submit" loading={loading} onPress={onSubmit}/>
             </View>
         </View>
     </ScreenWrap>
