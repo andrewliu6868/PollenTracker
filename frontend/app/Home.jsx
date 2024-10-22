@@ -9,8 +9,13 @@ export default function Home() {
   return (
     <ScreenWrap>
         <View style={styles.container}>
+            
             <View style={styles.top}>
                 <Text style={styles.appName}>PollenSense</Text>
+            </View>
+
+            <View style = {styles.heatmap}>
+
             </View>
 
         </View>
@@ -37,5 +42,9 @@ const styles = StyleSheet.create({
         color: theme.colors.text,
         fontSize: heightP(3.5),
         fontWeight: theme.fonts.bold
+    },
+
+    heatmap:{
+        alignItems: 'center'
     }
 })
