@@ -13,10 +13,4 @@ from rest_framework import status
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return Response({"message": "User registered successfully!"}, status=status.HTTP_201_CREATED)
-    
+    permission_classes = [AllowAny]

@@ -1,4 +1,5 @@
 Django>=3.2
 djangorestframework>=3.12
 djangorestframework-simplejwt>=4.8.0
+django-cors-headers>=3.13
 psycopg2-binary>=2.8  # PostgreSQL adapter
