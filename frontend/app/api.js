@@ -26,12 +26,11 @@ export const loginUser = async (username, password) => {
 // Function to register a new user
 export const registerUser = async (email, password, password2, username, firstName, lastName) => {
   try {
-    console.log('here')
     const response = await api.post('/allergy_tracker/user/register/', {
       username,
       email,
       password,
-      password2: password,  // Confirm password
+      password2,  // Confirm password
       first_name: firstName,
       last_name: lastName,
     });
