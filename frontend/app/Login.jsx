@@ -61,7 +61,7 @@ export default function Login() {
             </View>
             <View style={styles.spacing}>
                 <CustomInput icon = {<Email strokeWidth = {0.75} iconColor={theme.colors.gray} />} placeholder = "Enter your email" onChangeText={(text)=>{emailRef.current = text}}/>
-                <CustomInput icon = {<Password strokeWidth = {0.75} iconColor={theme.colors.gray}/>} placeholder = "Enter your password" onChangeText={(text)=> {passRef.current = text}}/>
+                <CustomInput icon = {<Password strokeWidth = {0.75} iconColor={theme.colors.gray}/>} placeholder = "Enter your password" secureTextEntry={true} onChangeText={(text)=> {passRef.current = text}}/>
                 <Text style={styles.noPassword}> Can't remember your password?</Text>
                 <Button text="Submit" loading={loading} onPress={onSubmit}/>
             </View>

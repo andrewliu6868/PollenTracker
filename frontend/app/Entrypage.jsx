@@ -23,9 +23,9 @@ export default function Entrypage(){
                 <View style={styles.bStyle}>
                     <Button text = "Sign up" buttonStyle = {{marginHorizontal:widthP(2)}} onPress={() => router.push('/SignUp')}/>
                     <View style={[styles.smallText, {color: theme.colors.primaryDark, fontWeight: theme.fonts.semibold}]}>
-                        <Text>If you already have an account,</Text>
+                        <Text>If you already have an account, </Text>
                         <Pressable onPress = {() => router.push('Login')}>
-                            <Text> login here!</Text>
+                            <Text style={styles.linkText}>login here!</Text>
                         </Pressable>
                     </View>
                 </View>
@@ -46,7 +46,10 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         marginHorizontal: widthP(2)
     },
-
+    linkText: {
+        color: 'blue',
+        textDecorationLine: 'underline',
+      },
     mainImage: {
         height: heightP(25),
         width: widthP(80),

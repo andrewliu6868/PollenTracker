@@ -60,12 +60,12 @@ export default function SignUp() {
 
         <View style={styles.spacing}>
           <CustomInput icon={<Email strokeWidth={0.75} iconColor={theme.colors.gray} />} placeholder="Enter your email" onChangeText={(text) => { emailRef.current = text }} />
-          <CustomInput icon={<UserIcon strokeWidth={0.75} iconColor={theme.colors.gray} />} placeholder="Enter your username" onChangeText={(text) => { usernameRef.current = text }} />
-          <CustomInput icon={<Password strokeWidth={0.75} iconColor={theme.colors.gray} />} placeholder="Enter your password" onChangeText={(text) => { passRef.current = text }} />
-          <CustomInput icon={<Password strokeWidth={0.75} iconColor={theme.colors.gray} />} placeholder="Confirm your password" onChangeText={(text) => { confirmPassRef.current = text }} />
           <CustomInput icon={<UserIcon strokeWidth={0.75} iconColor={theme.colors.gray} />} placeholder="Enter your first name" onChangeText={(text) => { fnRef.current = text }} />
           <CustomInput icon={<UserIcon strokeWidth={0.75} iconColor={theme.colors.gray} />} placeholder="Enter your last name" onChangeText={(text) => { lnRef.current = text }} />
-        </View>
+          <CustomInput icon={<UserIcon strokeWidth={0.75} iconColor={theme.colors.gray} />} placeholder="Enter your username" onChangeText={(text) => { usernameRef.current = text }} />
+          <CustomInput icon={<Password strokeWidth={0.75} iconColor={theme.colors.gray} />} placeholder="Enter your password" secureTextEntry={true} onChangeText={(text) => { passRef.current = text }} />
+          <CustomInput icon={<Password strokeWidth={0.75} iconColor={theme.colors.gray} />} placeholder="Confirm your password" secureTextEntry={true} onChangeText={(text) => { confirmPassRef.current = text }} />
+          </View>
 
         <Button text="Submit" loading={loading} onPress={onSubmit} />
       </View>
@@ -85,6 +85,6 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
   },
   spacing: {
-    gap: 25,
+    gap: 20,
   }
 })
