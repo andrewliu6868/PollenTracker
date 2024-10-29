@@ -12,6 +12,9 @@ import CustomInput from '../components/CustomInput'
 import LoadIndicator from '../components/LoadIndicator'
 import { useRef, useState } from 'react'
 import Button from '../components/Button'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loginUser } from './api';  // Import the API service
+
 
 export default function Login() {
     const [loading, setLoading] = useState(false);
@@ -24,10 +27,28 @@ export default function Login() {
         if(!emailRef.current || !passRef.current){
             Alert.alert('Login Error', 'Please fill in all fields!');
             return;
-        }else{
-            // for now just direct to home page without authentication
-            router.push('/Home')
-            return;
+        }
+        
+        setLoading(true);  // Show loading indicator
+        try {
+            // Make the API call to login the user
+            const data = await loginUser(emailRef.current, passRef.current);
+            
+            // Save tokens (you can use AsyncStorage to save tokens locally)
+            const { access, refresh } = data;
+            // Save tokens in AsyncStorage
+            await AsyncStorage.setItem('accessToken', access);
+            await AsyncStorage.setItem('refreshToken', refresh);
+            console.log('Access Token:', access);
+            console.log('Refresh Token:', refresh);
+    
+            // Direct to home page on successful login
+            setLoading(false);
+            router.push('/Home');
+        } catch (error) {
+            setLoading(false);
+            console.error('Error logging in:', error);
+            Alert.alert('Login Error', 'Invalid email or password');
         }
     }
   return (

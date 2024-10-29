@@ -21,10 +21,10 @@ export default function Entrypage(){
                 </View>
 
                 <View style={styles.bStyle}>
-                    <Button text = "Sign Up" buttonStyle = {{marginHorizontal:widthP(2)}} onPress={() => router.push('/Login')}/>
+                    <Button text = "Sign up" buttonStyle = {{marginHorizontal:widthP(2)}} onPress={() => router.push('/SignUp')}/>
                     <View style={[styles.smallText, {color: theme.colors.primaryDark, fontWeight: theme.fonts.semibold}]}>
                         <Text>If you already have an account,</Text>
-                        <Pressable onPress = {() => router.push('SignUp')}>
+                        <Pressable onPress = {() => router.push('Login')}>
                             <Text> login here!</Text>
                         </Pressable>
                     </View>
