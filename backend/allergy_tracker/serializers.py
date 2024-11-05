@@ -49,9 +49,11 @@ class MedicationSerializer(serializers.ModelSerializer):
         
 
 class SymptomTrackingSerializer(serializers.ModelSerializer):
+    date_created = serializers.DateTimeField(format="iso-8601", read_only=True)
     class Meta:
         model = SymptomTracking
-        fields = '__all__'
+        fields = ['id', 'user', 'symptoms', 'severity', 'notes', 'date_created']
+        read_only_fields = ['user', 'date_created']
         
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
