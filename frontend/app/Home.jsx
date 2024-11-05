@@ -1,3 +1,5 @@
+import axios from 'axios';
+import { AMBEE_API_KEY } from '@env';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native'
 import ScreenWrap from '../components/ScreenWrap'
 import { StatusBar } from 'expo-status-bar';
