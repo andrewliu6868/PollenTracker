@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.0.0",
+    "@reduxjs/toolkit": "^2.3.0",
     "axios": "^1.7.7",
     "expo": "~51.0.28",
     "expo-router": "^3.5.23",
@@ -17,7 +18,8 @@
     "react": "18.2.0",
     "react-native": "0.74.5",
     "react-native-dotenv": "^3.4.11",
-    "react-native-svg": "^15.7.1"
+    "react-native-svg": "^15.7.1",
+    "redux": "^5.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

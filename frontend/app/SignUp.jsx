@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Alert } from 'react-native'
+import { View, ScrollView, Text, StyleSheet, Alert } from 'react-native'
 import React from 'react'
 import { useRef, useState } from 'react'
 import { useRouter } from 'expo-router'
@@ -51,7 +51,7 @@ export default function SignUp() {
   return (
     <ScreenWrap>
       <StatusBar style="dark" />
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <BackButton router={router} />
 
         <Text style={styles.titleText}>
@@ -68,7 +68,7 @@ export default function SignUp() {
           </View>
 
         <Button text="Submit" loading={loading} onPress={onSubmit} />
-      </View>
+      </ScrollView>
     </ScreenWrap>
   )
 }

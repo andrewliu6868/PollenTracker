@@ -3,23 +3,17 @@ import { AMBEE_API_KEY } from '@env';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native'
 import ScreenWrap from '../components/ScreenWrap'
 import { StatusBar } from 'expo-status-bar';
+import Menu from '../assets/icons/Menu'
 import { heightP, widthP } from '../style/deviceSpecs.js';
 import { theme } from '../style/theme.js';
 import React from 'react'
+import TopBar from '../components/TopBar.jsx';
 
 export default function Home() {
   return (
     <ScreenWrap>
         <View style={styles.container}>
-            
-            <View style={styles.top}>
-                <Text style={styles.appName}>PollenSense</Text>
-            </View>
-
-            <View style = {styles.heatmap}>
-
-            </View>
-
+            <TopBar/>
         </View>
 
     </ScreenWrap>
@@ -29,7 +23,6 @@ export default function Home() {
 const styles = StyleSheet.create({
     container:{
         flex: 1,
-        justifyContent: 'center',
     },
 
     top:{
