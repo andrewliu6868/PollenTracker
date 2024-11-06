@@ -10,6 +10,7 @@ import { theme } from '../style/theme.js';
 export default function Entrypage(){
     // Navigates to login and signup
     const router = useRouter();
+
     return (
         <ScreenWrap bg="white">
             <StatusBar style ="dark"/>

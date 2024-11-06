@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native'
+import { View, Text, Pressable, Image, StyleSheet } from 'react-native'
 import React from 'react'
 import Menu from '../assets/icons/Menu'
 import { theme } from '../style/theme'
@@ -8,9 +8,9 @@ export default function TopBar(){
     <View style={styles.container}>
       <Text style = {styles.container}>PollenSense</Text>
 
-      <TouchableOpacity style={styles.menuButton}>
+      <Pressable style={styles.menuButton}>
         <Menu strokeWidth={0.75} iconColor={theme.colors.gray}/>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   )
 }
