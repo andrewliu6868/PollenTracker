@@ -46,7 +46,7 @@ class SymptomTracking(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)  # Date of entry
 
     def __str__(self):
-        return f"Journal Entry for {self.user.username} on {self.date}"
+        return f"Journal Entry for {self.user.username} on {self.date_created}"
     
 # for the feature that identifies the allergens most likely to affect the user based ontehir symptom logs and pollen data
 class AllergenSpecies(models.Model):

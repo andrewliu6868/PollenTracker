@@ -60,7 +60,7 @@ export const saveJournalEntry = async (data) => {
   }
 
   try {
-    const response = await axios.post('allergy_tracker/journal/', data, {
+    const response = await api.post('allergy_tracker/journal/', data, {
       headers: { Authorization: `Bearer ${token}` },
     });
     console.log('Entry saved:', response.data);

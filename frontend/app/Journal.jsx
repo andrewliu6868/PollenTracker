@@ -1,18 +1,32 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Button, ScrollView, Alert } from 'react-native';
-import { Slider } from '@react-native-community/slider';
+import { StyleSheet, View, Text, TextInput, Alert, TouchableOpacity, ScrollView, Platform, Dimensions, SafeAreaView, StatusBar } from 'react-native';
+import Slider from '@react-native-community/slider';
+import CheckBox from 'expo-checkbox';
 import { theme } from '../style/theme';
 import ScreenWrap from '../components/ScreenWrap';
 import { saveJournalEntry } from './api';
 
+const symptomOptions = [
+  { id: 'sneezing', label: 'Sneezing' },
+  { id: 'coughing', label: 'Coughing' },
+  { id: 'itchyEyes', label: 'Itchy Eyes' },
+  { id: 'runnyNose', label: 'Runny Nose' },
+  { id: 'headache', label: 'Headache' },
+  { id: 'fatigue', label: 'Fatigue' },
+  { id: 'congestion', label: 'Congestion' },
+  { id: 'skinRash', label: 'Skin Rash' },
+  { id: 'itchyThroat', label: 'Itchy Throat' },
+  { id: 'swelling', label: 'Swelling' },
+  { id: 'nausea', label: 'Nausea' },
+  { id: 'dizziness', label: 'Dizziness' },
+];
+
+const screenWidth = Dimensions.get('window').width;
+const buttonWidth = (screenWidth - 60) / 3; // Adjust based on padding and spacing
+
 export default function Journal() {
-  const [symptoms, setSymptoms] = useState({
-    sneezing: false,
-    coughing: false,
-    itchyEyes: false,
-    runnyNose: false,
-  });
-  const [severity, setSeverity] = useState(0);
+  const [symptoms, setSymptoms] = useState([]);
+  const [severity, setSeverity] = useState(5);
   const [notes, setNotes] = useState('');
 
   const handleSave = async () => {
@@ -30,82 +44,221 @@ export default function Journal() {
     }
   };
 
-  const handleSymptomChange = (symptom) => {
-    setSymptoms((prevSymptoms) => ({
-      ...prevSymptoms,
-      [symptom]: !prevSymptoms[symptom],
-    }));
+  const toggleSymptom = (symptomId) => {
+    if (symptoms.includes(symptomId)) {
+      setSymptoms(symptoms.filter(id => id !== symptomId));
+    } else {
+      setSymptoms([...symptoms, symptomId]);
+    }
+  };
+
+  const getSeverityColor = () => {
+    if (severity <= 3) return theme.colors.severityLow;
+    if (severity <= 6) return theme.colors.severityHigh;
+    return theme.colors.severityMedium;
   };
 
   return (
-    <ScreenWrap>
+    <SafeAreaView style={styles.safeArea}>
+      {/* Control the appearance of the status bar */}
+      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.white} />
+
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Track Your Symptoms</Text>
-        
-        <Text style={styles.label}>Symptoms:</Text>
-        {Object.keys(symptoms).map((symptom) => (
-          <View key={symptom} style={styles.checkboxContainer}>
-            <Text>{symptom}</Text>
-            <CheckBox
-              value={symptoms[symptom]}
-              onValueChange={() => handleSymptomChange(symptom)}
+        <View style={styles.content}>
+          <Text style={styles.title}>Track Your Symptoms</Text>
+          
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Select Your Symptoms</Text>
+            <View style={styles.symptomsGrid}>
+              {symptomOptions.map((symptom) => (
+                <TouchableOpacity
+                  key={symptom.id}
+                  style={[
+                    styles.symptomButton,
+                    symptoms.includes(symptom.id) && styles.symptomButtonSelected,
+                  ]}
+                  onPress={() => toggleSymptom(symptom.id)}
+                >
+                  <Text
+                    style={[
+                      styles.symptomButtonText,
+                      symptoms.includes(symptom.id) && styles.symptomButtonTextSelected,
+                    ]}
+                    numberOfLines={2}
+                    adjustsFontSizeToFit
+                  >
+                    {symptom.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Overall Severity</Text>
+            <View style={styles.severityContainer}>
+              <Slider
+                style={styles.slider}
+                minimumValue={0}
+                maximumValue={10}
+                step={1}
+                value={severity}
+                onValueChange={setSeverity}
+                minimumTrackTintColor={getSeverityColor()}
+                maximumTrackTintColor={theme.colors.black}
+                thumbTintColor={getSeverityColor()}
+              />
+              <View style={styles.severityLabels}>
+                <Text style={styles.severityValue}>{severity}</Text>
+                <View style={styles.severityRange}>
+                  <Text style={styles.severityLabel}>Mild</Text>
+                  <Text style={styles.severityLabel}>Severe</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Additional Notes</Text>
+            <TextInput
+              style={styles.notesInput}
+              multiline
+              numberOfLines={3}
+              value={notes}
+              onChangeText={setNotes}
+              placeholder="Add any additional observations..."
+              placeholderTextColor={theme.colors.lightText}
             />
           </View>
-        ))}
 
-        <Text style={styles.label}>Overall Severity:</Text>
-        <Slider
-          style={styles.slider}
-          minimumValue={0}
-          maximumValue={10}
-          step={1}
-          value={severity}
-          onValueChange={setSeverity}
-        />
-        <Text>Severity: {severity}</Text>
-
-        <Text style={styles.label}>Additional Notes:</Text>
-        <TextInput
-          style={styles.textInput}
-          multiline
-          numberOfLines={4}
-          value={notes}
-          onChangeText={setNotes}
-        />
-
-        <Button title="Save" onPress={handleSave} />
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveButtonText}>Save Symptoms</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
-    </ScreenWrap>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme.colors.white,
+  },
   container: {
+    flexGrow: 1,
+    backgroundColor: theme.colors.white,
     padding: 20,
+  },
+  content: {
+    paddingBottom: 20,  // Prevent overlapping with bottom edge
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    color: theme.colors.text,
+    marginBottom: 16,
   },
-  label: {
-    fontSize: 18,
-    marginVertical: 10,
+  section: {
+    marginBottom: 16,
   },
-  checkboxContainer: {
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.text,
+    marginBottom: 8,
+  },
+  symptomsGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  symptomButton: {
+    width: buttonWidth - 8,
+    height: 50,
+    backgroundColor: theme.colors.white,
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 8,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+    ...Platform.select({
+      ios: {
+        shadowColor: theme.colors.text,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
+  },
+  symptomButtonSelected: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  symptomButtonText: {
+    fontSize: 14,
+    color: theme.colors.black,
+    textAlign: 'center',
+  },
+  symptomButtonTextSelected: {
+    color: theme.colors.white,
+  },
+  severityContainer: {
+    backgroundColor: theme.colors.white,
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
   },
   slider: {
     width: '100%',
-    height: 40,
+    height: 32,
   },
-  textInput: {
-    borderColor: theme.colors.text,
+  severityLabels: {
+    marginTop: 4,
+  },
+  severityValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  severityRange: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  severityLabel: {
+    fontSize: 15,
+    color: theme.colors.textLight,
+  },
+  notesInput: {
+    backgroundColor: theme.colors.white,
+    borderRadius: 8,
+    padding: 12,
+    height: 80,
+    textAlignVertical: 'top',
+    fontSize: 14,
+    color: theme.colors.text,
     borderWidth: 1,
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 20,
+    borderColor: theme.colors.primary,
+  },
+  saveButton: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: 8,
+    padding: 14,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  saveButtonText: {
+    color: theme.colors.white,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
