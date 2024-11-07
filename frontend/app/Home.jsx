@@ -6,6 +6,7 @@ import { heightP, widthP } from '../style/deviceSpecs.js';
 import { theme } from '../style/theme.js';
 import React from 'react'
 import TopBar from '../components/TopBar.jsx';
+import HeatMap from '../components/HeatMap.jsx';
 
 export default function Home() {
   return (
@@ -13,7 +14,9 @@ export default function Home() {
         <View style={styles.container}>
             <TopBar/>
         </View>
-        <ScrollView style={styles.heatmap}></ScrollView>
+        <ScrollView style={styles.body}>
+            <HeatMap lat={40} long={75}/>
+        </ScrollView>
 
     </ScreenWrap>
   )
@@ -38,7 +41,7 @@ const styles = StyleSheet.create({
         fontWeight: theme.fonts.bold
     },
 
-    heatmap:{
+    body:{
         alignItems: 'center'
     }
 })

@@ -5,7 +5,7 @@ import MapView, {Heatmap} from 'react-native-maps';
 import {View, StyleSheet, ActivityIndicator} from 'react-native';
 import Geocoder from 'react-native-geocoding';
 
-export default function HeatMap(){
+export default function HeatMap(props){
     // fetch async data from api
     const fetchData = async(lat, long) => {
         try{
@@ -25,7 +25,7 @@ export default function HeatMap(){
     useEffect(() => {
         const overlay = async () => {
             try{
-                const data = fetchData(40, -75); // sample data, adjust later
+                const data = fetchData(props.lat, props.long); // sample data, adjust later
                 const pollenPoints = data.data.map((point) => ({
                     latitude: point.lat,
                     longitude: point.lng,
