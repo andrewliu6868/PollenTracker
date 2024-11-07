@@ -60,11 +60,30 @@ export const saveJournalEntry = async (data) => {
   }
 
   try {
-    const response = await api.post('allergy_tracker/journal/', data, {
+    const response = await api.post('allergy_tracker/journal/create/', data, {
       headers: { Authorization: `Bearer ${token}` },
     });
     console.log('Entry saved:', response.data);
+    return response.data;
   } catch (error) {
     console.error('Error saving journal entry:', error.response.data);
+  }
+};
+
+export const getJournalEntries = async () => {
+  const token = await getAuthToken();
+  if (!token) {
+    console.error('No token found');
+    return;
+  }
+
+  try {
+    const response = await api.get('/allergy_tracker/journal/', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error getting journal entries:', error.response.data);
+    throw error;
   }
 };

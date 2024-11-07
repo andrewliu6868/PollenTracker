@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, Alert, TouchableOpacity, ScrollView, Platform, Dimensions, SafeAreaView, StatusBar } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, TextInput, Alert, TouchableOpacity, ScrollView, Platform, Dimensions, SafeAreaView, StatusBar, FlatList  } from 'react-native';
 import Slider from '@react-native-community/slider';
-import CheckBox from 'expo-checkbox';
 import { theme } from '../style/theme';
 import ScreenWrap from '../components/ScreenWrap';
-import { saveJournalEntry } from './api';
+import { saveJournalEntry, getJournalEntries } from './api';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const symptomOptions = [
   { id: 'sneezing', label: 'Sneezing' },
@@ -28,6 +28,19 @@ export default function Journal() {
   const [symptoms, setSymptoms] = useState([]);
   const [severity, setSeverity] = useState(5);
   const [notes, setNotes] = useState('');
+  const [previousEntries, setPreviousEntries] = useState([]);
+
+  useEffect(() => {
+    const fetchEntries = async () => {
+      try {
+        const entries = await getJournalEntries();
+        setPreviousEntries(entries);
+      } catch (error) {
+        console.error('Error fetching journal entries:', error);
+      }
+    };
+    fetchEntries();
+  }, []);
 
   const handleSave = async () => {
     try {
@@ -36,7 +49,13 @@ export default function Journal() {
         severity,
         notes,
       };
-      await saveJournalEntry(data);
+      const newEntry = await saveJournalEntry(data);
+
+      setPreviousEntries([newEntry, ...previousEntries]);
+
+      setSymptoms([]);
+      setSeverity(5);
+      setNotes('');
       Alert.alert('Success', 'Journal entry saved successfully!');
     } catch (error) {
       console.error('Error saving journal entry:', error);
@@ -52,21 +71,43 @@ export default function Journal() {
     }
   };
 
-  const getSeverityColor = () => {
+  const getSeverityColor = (severity) => {
     if (severity <= 3) return theme.colors.severityLow;
     if (severity <= 6) return theme.colors.severityHigh;
     return theme.colors.severityMedium;
   };
 
-  return (
+  const getSeverityIcon = (severity) => {
+    if (severity <= 3) return 'happy-outline';
+    if (severity <= 6) return 'sad-outline';
+    return 'warning-outline';
+  };
+
+  const renderEntryCard = ({ item }) => (
+    <View style={styles.entryCard}>
+      <View style={styles.entryHeader}>
+        <Text style={styles.entryDate}>{item.date_created}</Text>
+        <Icon name={getSeverityIcon(item.severity)} size={20} color={getSeverityColor(item.severity)} />
+      </View>
+      <View style={styles.symptomBubbles}>
+        {item.symptoms.map((symptom) => (
+          <Text key={symptom} style={styles.symptomBubble}>{symptom}</Text>
+        ))}
+      </View>
+      <Text style={styles.entryNotes}>{item.notes}</Text>
+    </View>
+  );
+
+
+   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Control the appearance of the status bar */}
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.white} />
 
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.content}>
           <Text style={styles.title}>Track Your Symptoms</Text>
           
+          {/* Symptom Selection */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Select Your Symptoms</Text>
             <View style={styles.symptomsGrid}>
@@ -79,21 +120,16 @@ export default function Journal() {
                   ]}
                   onPress={() => toggleSymptom(symptom.id)}
                 >
-                  <Text
-                    style={[
-                      styles.symptomButtonText,
-                      symptoms.includes(symptom.id) && styles.symptomButtonTextSelected,
-                    ]}
-                    numberOfLines={2}
-                    adjustsFontSizeToFit
-                  >
-                    {symptom.label}
-                  </Text>
+                  <Text style={[
+                    styles.symptomButtonText,
+                    symptoms.includes(symptom.id) && styles.symptomButtonTextSelected,
+                  ]}>{symptom.label}</Text>
                 </TouchableOpacity>
               ))}
             </View>
           </View>
 
+          {/* Severity Slider */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Overall Severity</Text>
             <View style={styles.severityContainer}>
@@ -104,9 +140,9 @@ export default function Journal() {
                 step={1}
                 value={severity}
                 onValueChange={setSeverity}
-                minimumTrackTintColor={getSeverityColor()}
+                minimumTrackTintColor={getSeverityColor(severity)}
                 maximumTrackTintColor={theme.colors.black}
-                thumbTintColor={getSeverityColor()}
+                thumbTintColor={getSeverityColor(severity)}
               />
               <View style={styles.severityLabels}>
                 <Text style={styles.severityValue}>{severity}</Text>
@@ -118,12 +154,12 @@ export default function Journal() {
             </View>
           </View>
 
+          {/* Notes Input */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Additional Notes</Text>
             <TextInput
               style={styles.notesInput}
               multiline
-              numberOfLines={3}
               value={notes}
               onChangeText={setNotes}
               placeholder="Add any additional observations..."
@@ -134,6 +170,15 @@ export default function Journal() {
           <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
             <Text style={styles.saveButtonText}>Save Symptoms</Text>
           </TouchableOpacity>
+
+          {/* Previous Entries */}
+          <FlatList
+            data={previousEntries}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderEntryCard}
+            contentContainerStyle={styles.entriesContainer}
+            scrollEnabled={false}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -260,5 +305,44 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     fontSize: 16,
     fontWeight: '600',
+  },
+  entriesContainer: {
+    paddingTop: 16,
+  },
+  entryCard: {
+    backgroundColor: theme.colors.white,
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.lightGray,
+  },
+  entryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  entryDate: {
+    fontSize: 14,
+    color: theme.colors.textLight,
+  },
+  symptomBubbles: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 8,
+  },
+  symptomBubble: {
+    backgroundColor: theme.colors.primary,
+    color: theme.colors.white,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    marginRight: 4,
+    marginBottom: 4,
+    fontSize: 12,
+  },
+  entryNotes: {
+    fontSize: 14,
+    color: theme.colors.text,
   },
 });

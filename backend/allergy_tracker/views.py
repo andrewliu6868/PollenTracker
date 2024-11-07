@@ -24,3 +24,10 @@ class CreateSymptomEntryView(generics.CreateAPIView):
     def perform_create(self, serializer):
         # Set the user to the logged-in user
         serializer.save(user=self.request.user)
+class JournalEntryListView(generics.ListAPIView):
+    serializer_class = SymptomTrackingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Return entries for the logged-in user
+        return SymptomTracking.objects.filter(user=self.request.user).order_by('-date_created')
