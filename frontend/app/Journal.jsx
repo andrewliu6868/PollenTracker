@@ -87,14 +87,14 @@ export default function Journal() {
     <View style={styles.entryCard}>
       <View style={styles.entryHeader}>
         <Text style={styles.entryDate}>{item.date_created}</Text>
-        <Icon name={getSeverityIcon(item.severity)} size={20} color={getSeverityColor(item.severity)} />
+        <Icon name={getSeverityIcon(item.severity)} size={30} color={getSeverityColor(item.severity)} />
       </View>
       <View style={styles.symptomBubbles}>
         {item.symptoms.map((symptom) => (
           <Text key={symptom} style={styles.symptomBubble}>{symptom}</Text>
         ))}
       </View>
-      <Text style={styles.entryNotes}>{item.notes}</Text>
+      <Text style={styles.entryNotes}>Notes: {item.notes}</Text>
     </View>
   );
 
