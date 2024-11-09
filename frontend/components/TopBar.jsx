@@ -4,17 +4,17 @@ import Menu from '../assets/icons/Menu'
 import SideDrawer from './SideDrawer'
 import { theme } from '../style/theme'
 
-export default function TopBar(props){
+export default function TopBar({title, router}){
   const [drawerVis, setDrawerVis] = useState(false);
   const toggleDrawer = () => setDrawerVis(!drawerVis);
   return (
     <View style={styles.container}>
-      <Text style = {styles.container}>{props.title}</Text>
-      <Pressable style={styles.menuButton} onPress={() => {toggleDrawer}}>
-        <Menu strokeWidth={0.75} iconColor={theme.colors.gray}/>
+      <Text style = {styles.container}>{title}</Text>
+      <Pressable style={styles.menuButton} onPress={toggleDrawer}>
+        <Menu strokeWidth={0.75} iconColor='#333'/>
       </Pressable>
 
-      {drawerVis && <SideDrawer visible={drawerVis} onClose={toggleDrawer}/>}
+      {drawerVis && <SideDrawer visible={drawerVis} onClose={toggleDrawer} router={router}/>}
     </View>
   )
 }

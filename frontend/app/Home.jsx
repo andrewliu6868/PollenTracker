@@ -17,12 +17,18 @@ export default function Home() {
     return (
         <ScreenWrap>
             <View style={styles.container}>
-                <TopBar title='PollenSense'/>
+                <TopBar title='PollenSense' router={router}/>
             </View>
-            <ScrollView>
-                <Text>Hello!</Text>
-                <Button  text="Medication Page" loading={loading} onPress={() => {router.push('/Medication')}} />
-            </ScrollView>
+                <MapView
+                    style={styles.map}
+                    initialRegion={{
+                    latitude: 40.73061,
+                    longitude: -73.935242,
+                    latitudeDelta: 0.1,
+                    longitudeDelta: 0.1,
+                    }}
+                >
+                </MapView>
 
         </ScreenWrap>
     )
@@ -43,8 +49,6 @@ const styles = StyleSheet.create({
 
     map: {
         flex: 1,
-        width: '80%',
-        height: '20%',
     },
 
     appName:{

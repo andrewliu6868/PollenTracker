@@ -6,22 +6,21 @@ import {Text, View, StyleSheet, ActivityIndicator} from 'react-native';
 import Geocoder from 'react-native-geocoding';
 
 export default function HeatMap(props){
+    // states to set up map
+    const [pollenData, setPollenData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [heatmap, setHeatMap] = useState([]);
     // fetch async data from api
     const fetchData = async(lat, long) => {
         try{
-            const res = await axios.get('https://api.ambeedata.com/latest/pollen/by-lat-lng', {params: {lat: lat, lng: long}, headers: {'x-api-key': AMBEE_API_KEY}});
+            const res = await axios.get('https://api.ambeedata.com/latest/pollen/by-lat-lng?lat=41.3874&lng=2.1686', { headers: {'x-api-key': AMBEE_API_KEY, 'Content-Type': 'application/json'}});
             return res.data;
         } catch (err){
             console.error('Error: Unable to fetch pollen data from the location', err);
             throw err
         }
     }
-
-    // states to set up map
-    const [pollenData, setPollenData] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
     useEffect(() => {
         const overlay = async () => {
             try{
@@ -60,17 +59,6 @@ export default function HeatMap(props){
           longitudeDelta: 0.1,
         }}
       >
-        <Heatmap
-          points={pollenData}
-          opacity={0.6}
-          radius={20}
-          maxIntensity={100}
-          gradient={{
-            colors: ['#00ff00', '#ffff00', '#ff0000'],
-            startPoints: [0.1, 0.5, 1],
-            colorMapSize: 256,
-          }}
-        />
       </MapView>);
 
 };
