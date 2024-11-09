@@ -1,16 +1,20 @@
-import { View, Text, Pressable, Image, StyleSheet } from 'react-native'
-import React from 'react'
+import { View, Text, Pressable, Image, StyleSheet, TouchableOpacity } from 'react-native'
+import React, {useState} from 'react'
 import Menu from '../assets/icons/Menu'
+import SideDrawer from './SideDrawer'
 import { theme } from '../style/theme'
 
 export default function TopBar(props){
+  const [drawerVis, setDrawerVis] = useState(false);
+  const toggleDrawer = () => setDrawerVis(!drawerVis);
   return (
     <View style={styles.container}>
       <Text style = {styles.container}>{props.title}</Text>
-
-      <Pressable style={styles.menuButton}>
+      <Pressable style={styles.menuButton} onPress={() => {toggleDrawer}}>
         <Menu strokeWidth={0.75} iconColor={theme.colors.gray}/>
       </Pressable>
+
+      {drawerVis && <SideDrawer visible={drawerVis} onClose={toggleDrawer}/>}
     </View>
   )
 }

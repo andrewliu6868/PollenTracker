@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import PushNotification from 'react-native-push-notification';
 import AsyncStorage from '@react-native-community/async-storage';
 import ScreenWrap from '../components/ScreenWrap';
@@ -43,9 +43,12 @@ export default function Medication(){
                         )}
                     />
                 </DataTable>
-
-                <Button text="Add New Medication" loading={loading} onPress={() => setIsAddModalVisibile(true)}/>
-
+                <TouchableOpacity
+                    style={styles.addButton}
+                    onPress={() => setIsAddModalVisible(true)}
+                >
+                    <Text style={styles.addButtonText}>+</Text>
+                </TouchableOpacity>
                 <AddMedication
                     isVisible={isAddModalVisible}
                     onClose={() => setIsAddModalVisibile(false)}
@@ -61,5 +64,20 @@ export default function Medication(){
 const styles = StyleSheet.create({
     container: {
         flex: 1
+    },
+    addButton: {
+        position: 'absolute',
+        bottom: 30,
+        right: 30,
+        backgroundColor: '#6200ee',
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    addButtonText: {
+        color: '#fff',
+        fontSize: 24,
     },
 });
