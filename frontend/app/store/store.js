@@ -1,3 +1,5 @@
+// the global state accessible by any component
+
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './authSlice';
 

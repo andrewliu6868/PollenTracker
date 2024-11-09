@@ -1,4 +1,4 @@
-// app/store/authSlice.js
+// slice of the global state
 import { createSlice } from '@reduxjs/toolkit';
 import * as SecureStore from 'expo-secure-store';
 import api from '../services/api';
