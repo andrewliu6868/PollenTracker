@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { SERVER_IP } from '@env';
 
 // Replace with your actual backend URL
-const BASE_URL = 'http://10.0.0.200:8000';  // Use your computer's IP address
+const BASE_URL = SERVER_IP;  // Use your computer's IP address
 
 // Axios instance for API calls
 const api = axios.create({

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { AMBEE_API_KEY } from '@env';
 import React, {useEffect, useState} from 'react';
 import MapView, {Heatmap} from 'react-native-maps';
-import {View, StyleSheet, ActivityIndicator} from 'react-native';
+import {Text, View, StyleSheet, ActivityIndicator} from 'react-native';
 import Geocoder from 'react-native-geocoding';
 
 export default function HeatMap(props){
@@ -25,13 +25,17 @@ export default function HeatMap(props){
     useEffect(() => {
         const overlay = async () => {
             try{
-                const data = fetchData(props.lat, props.long); // sample data, adjust later
-                const pollenPoints = data.data.map((point) => ({
-                    latitude: point.lat,
-                    longitude: point.lng,
-                    weight: point.pollen_level,
-                }));
-                setPollenData(pollenPoints);
+                const data = await fetchData(props.lat, props.long); // sample data, adjust later
+                if (data && data.data) {
+                    const pollenPoints = data.data.map((point) => ({
+                        latitude: point.lat,
+                        longitude: point.lng,
+                        weight: point.pollen_level,
+                    }));
+                    setPollenData(pollenPoints);
+                } else {
+                    throw new Error('No data available');
+                }
             }catch(err){
                 setError(err);
             }finally{
@@ -45,7 +49,9 @@ export default function HeatMap(props){
     if (loading) return <ActivityIndicator size="large" color= 'green'/>;
     if (error) return <Text> Error loading data</Text>;
 
-    return (<MapView
+    return (
+    
+    <MapView
         style={styles.map}
         initialRegion={{
           latitude: 40.73061,

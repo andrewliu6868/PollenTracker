@@ -3,10 +3,10 @@ import React from 'react'
 import Menu from '../assets/icons/Menu'
 import { theme } from '../style/theme'
 
-export default function TopBar(){
+export default function TopBar(props){
   return (
     <View style={styles.container}>
-      <Text style = {styles.container}>PollenSense</Text>
+      <Text style = {styles.container}>{props.title}</Text>
 
       <Pressable style={styles.menuButton}>
         <Menu strokeWidth={0.75} iconColor={theme.colors.gray}/>
