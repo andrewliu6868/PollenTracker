@@ -19,17 +19,12 @@ export default function Home() {
             <View style={styles.container}>
                 <TopBar title='PollenSense' router={router}/>
             </View>
-                <MapView
-                    style={styles.map}
-                    initialRegion={{
-                    latitude: 40.73061,
-                    longitude: -73.935242,
-                    latitudeDelta: 0.1,
-                    longitudeDelta: 0.1,
-                    }}
-                >
-                </MapView>
+            <ScrollView contentContainerStyle={styles.scrollContentContainer}>
+                <View style={styles.mapContainer}>
+                    <HeatMap lat={45} long={-72}/>
+                </View>
 
+            </ScrollView>
         </ScreenWrap>
     )
 }
@@ -39,6 +34,22 @@ const styles = StyleSheet.create({
         flex: 1,
     },
 
+    scrollContentContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 20,
+    },
+
+    mapContainer:{
+        width: '90%',
+        aspectRatio: 1,
+        borderRadius: 20,
+        overflow: 'hidden',
+        marginVertical: 20,
+        borderWidth: 2,
+        borderColor: '#ddd',
+        backgroundColor: '#f0f0f0',
+    },
     top:{
         flexDirection: 'row',
         alignItems: 'center',
