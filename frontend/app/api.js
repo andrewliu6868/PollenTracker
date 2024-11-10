@@ -1,12 +1,11 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SERVER_URL, AMBEE_API_KEY } from '@env';  // Import environment variables
 
-// Replace with your actual backend URL
-const BASE_URL = 'http://10.0.0.200:8000';  // Use your computer's IP address
 
 // Axios instance for API calls
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: SERVER_URL,
   timeout: 10000,  // Timeout after 10 seconds
 });
 
@@ -84,6 +83,23 @@ export const getJournalEntries = async () => {
     return response.data;
   } catch (error) {
     console.error('Error getting journal entries:', error.response.data);
+    throw error;
+  }
+};
+
+
+export const getLatestPollenData = async (latitude, longitude) => {
+
+  try {
+    const response = await api.get(`https://api.ambeedata.com/latest/pollen/by-lat-lng?lat=${latitude}&lng=${longitude}`, {
+      headers: {
+        'x-api-key': AMBEE_API_KEY,
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error: Unable to fetch pollen data from the location', error);
     throw error;
   }
 };

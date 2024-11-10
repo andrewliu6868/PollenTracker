@@ -53,7 +53,7 @@ class SymptomTrackingSerializer(serializers.ModelSerializer):
     date_created = serializers.SerializerMethodField()
     class Meta:
         model = SymptomTracking
-        fields = ['id', 'user', 'symptoms', 'severity', 'notes', 'date_created']
+        fields = ['id', 'user', 'symptoms', 'topAllergens', 'severity', 'notes', 'date_created']
         read_only_fields = ['user', 'date_created']
 
     def get_date_created(self, obj):

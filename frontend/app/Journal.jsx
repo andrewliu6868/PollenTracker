@@ -3,8 +3,9 @@ import { StyleSheet, View, Text, TextInput, Alert, TouchableOpacity, ScrollView,
 import Slider from '@react-native-community/slider';
 import { theme } from '../style/theme';
 import ScreenWrap from '../components/ScreenWrap';
-import { saveJournalEntry, getJournalEntries } from './api';
+import { saveJournalEntry, getJournalEntries, getLatestPollenData  } from './api';
 import Icon from 'react-native-vector-icons/Ionicons';
+import * as Location from 'expo-location';
 
 const symptomOptions = [
   { id: 'sneezing', label: 'Sneezing' },
@@ -29,6 +30,7 @@ export default function Journal() {
   const [severity, setSeverity] = useState(5);
   const [notes, setNotes] = useState('');
   const [previousEntries, setPreviousEntries] = useState([]);
+  const [topAllergens, setTopAllergens] = useState([]);
 
   useEffect(() => {
     const fetchEntries = async () => {
@@ -39,13 +41,139 @@ export default function Journal() {
         console.error('Error fetching journal entries:', error);
       }
     };
+    const fetchTopAllergens = async () => {
+      try {
+        // Request permission to access the user's location
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permission Denied', 'Location access is required to get allergen data.');
+          return null;
+        }
+    
+        // Get the user's current location
+        const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+        const { latitude, longitude } = location.coords;
+    
+        // Pass the location to the getLatestPollenData function
+        const data = await getLatestPollenData(latitude, longitude);
+
+        // const data = {
+        //   "message": "success",
+        //   "lat": 41.3874,
+        //   "lng": 2.1686,
+        //   "data": [
+        //     {
+        //       "timezone": "Europe/Madrid",
+        //       "Species": {
+        //         "Grass": {
+        //           "Grass / Poaceae": 0
+        //         },
+        //         "Others": 0,
+        //         "Tree": {
+        //           "Alder": 0,
+        //           "Birch": 0,
+        //           "Cypress": 0,
+        //           "Elm": 0,
+        //           "Hazel": 0,
+        //           "Oak": 8,
+        //           "Pine": 0,
+        //           "Plane": 0,
+        //           "Poplar / Cottonwood": 0
+        //         },
+        //         "Weed": {
+        //           "Chenopod": 5,
+        //           "Mugwort": 0,
+        //           "Nettle": 0,
+        //           "Ragweed": 18
+        //         }
+        //       },
+        //       "Risk": {
+        //         "grass_pollen": "Low",
+        //         "tree_pollen": "Low",
+        //         "weed_pollen": "Moderate"
+        //       },
+        //       "Count": {
+        //         "grass_pollen": 0,
+        //         "tree_pollen": 8,
+        //         "weed_pollen": 25
+        //       },
+        //       "updatedAt": "2024-11-10T21:00:00.000Z"
+        //     }
+        //   ]
+        // };
+        
+        
+        const filteredAllergens = ExtractTopAllergens(data);
+
+        
+
+        setTopAllergens(filteredAllergens);
+        console.log('Top allergens:', topAllergens);
+
+      } catch (error) {
+        console.error('Error getting top allergens:', error);
+        // Alert.alert('Error', 'Failed to fetch allergen data.');
+        throw error;
+      }
+    };
+
+    const ExtractTopAllergens = (data) => {
+      if (!data?.data?.length) {
+        console.error('Invalid response data');
+        return [];
+      }
+    
+      // Extract the Species object
+      const speciesData = data.data[0].Species;
+      const countData = data.data[0].Count;
+    
+      // Flatten the Species object to get individual counts
+      const allergensList = [];
+    
+      // Extract non-zero counts from Grass, Tree, Weed, and Others
+      if (countData.grass_pollen > 0) {
+        Object.entries(speciesData.Grass).forEach(([name, count]) => {
+          if(count > 0) allergensList.push({ name, count });
+        });
+      }
+    
+      if (countData.tree_pollen > 0) {
+        Object.entries(speciesData.Tree).forEach(([name, count]) => {
+          if(count > 0) allergensList.push({ name, count });
+        });
+      }
+    
+      if (countData.weed_pollen > 0) {
+        Object.entries(speciesData.Weed).forEach(([name, count]) => {
+          if(count > 0) allergensList.push({ name, count });
+        });
+      }
+    
+      if (speciesData.Others) {
+        allergensList.push({ name: 'Others', count: speciesData.Others });
+      }
+    
+      // Sort the allergens by count in descending order
+      allergensList.sort((a, b) => b.count - a.count);
+    
+      // Get the top 5 allergens
+      const filteredAllergens = allergensList.slice(0, 5);
+    
+    
+      return filteredAllergens;
+    };
+    
     fetchEntries();
+    fetchTopAllergens();
   }, []);
+
+  
 
   const handleSave = async () => {
     try {
       const data = {
         symptoms,
+        topAllergens,
         severity,
         notes,
       };
