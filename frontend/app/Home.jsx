@@ -10,6 +10,7 @@ import Button from '../components/Button.jsx';
 import TopBar from '../components/TopBar.jsx';
 import MapView from 'react-native-maps';
 import HeatMap from '../components/HeatMap.jsx';
+import Forecast from '../components/Forecast.jsx';
 
 export default function Home() {
     const router = useRouter();
@@ -22,6 +23,9 @@ export default function Home() {
             <ScrollView contentContainerStyle={styles.scrollContentContainer}>
                 <View style={styles.mapContainer}>
                     <HeatMap lat={45} long={-72}/>
+                </View>
+                <View style={styles.forecastContainer}>
+                    <Forecast place={'Vancouver'}/>
                 </View>
 
             </ScrollView>
@@ -50,6 +54,18 @@ const styles = StyleSheet.create({
         borderColor: '#ddd',
         backgroundColor: '#f0f0f0',
     },
+    
+    forecastContainer: {
+        width: '90%',
+        aspectRatio: 1,
+        borderRadius: 20,
+        overflow: 'hidden',
+        marginVertical: 20,
+        borderWidth: 2,
+        borderColor: '#ddd',
+        backgroundColor: '#f0f0f0',
+    },
+
     top:{
         flexDirection: 'row',
         alignItems: 'center',

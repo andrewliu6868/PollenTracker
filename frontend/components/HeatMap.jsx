@@ -14,7 +14,7 @@ export default function HeatMap(props){
     const fetchData = async(lat, long) => {
         try{
             const res = await axios.get(`https://api.ambeedata.com/latest/pollen/by-lat-lng?lat=${lat}&lng=${long}`, { headers: {'x-api-key': AMBEE_API_KEY, 'Content-Type': 'application/json'}});
-                    // Ensure the data array exists and is not empty
+            // Ensure the data array exists and is not empty
             if (!res.data.data || res.data.data.length === 0) {
                 console.warn('No data available for the given location.');
                 return null;
@@ -34,7 +34,16 @@ export default function HeatMap(props){
             }
             return pollenInfo;
         } catch (err){
-            console.error('Error: Unable to fetch pollen data from the location', err);
+            console.error('Error: Unable to fetch pollen data from the location', err)
+            throw err
+        }
+    }
+
+    const fetchAreaData = async(place) => {
+        try{
+
+        }catch(err){
+            console.error('Error: Unable to fetch pollen data from area', err)
             throw err
         }
     }
