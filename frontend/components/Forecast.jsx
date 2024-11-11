@@ -14,6 +14,8 @@ export default function Forecast(props){
 
         const daysOfWeek = ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"]
 
+        // console.log(daysOfWeek[date.getDay()])
+
         return daysOfWeek[date.getDay()];
     }
 
@@ -40,7 +42,7 @@ export default function Forecast(props){
 
     const fetchData = async (place) => {
         try{
-            const res = await axios.get(`https://api.ambeedata.com/forecast/pollen/by-place?place=${place}`, {headers: {'x-api-key' : AMBEE_API_KEY, 'Content-type': "application/json"}})
+            const res = await axios.get(`https://api.ambeedata.com/forecast/v2/pollen/120hr/by-place?place=${place}`, {headers: {'x-api-key' : AMBEE_API_KEY, 'Content-type': "application/json"}})
             if (!res.data.data || res.data.data.length === 0) {
                 console.warn('No data available for the given location.');
                 return null;
@@ -55,15 +57,22 @@ export default function Forecast(props){
 
     useEffect(() => {
         const loadForecast = async () => {
+            setLoading(true)
             try{
                 const data = await fetchData(props.place)
                 // forecastData should have the following fields: dayOfWeek, pollenColor, pollenLevel
                 const newData = []
+                const firstDays = new Set()
                 for(let itr = 0; itr < data.length; itr++){
                     const curr = data[itr]
-                    const date = getLocalDate(curr)
+                    const date = getLocalDate(curr.time)
+                    // only create cards for the first occurrence of each day
+                    if(firstDays.has(date)){
+                        continue;
+                    }
+                    firstDays.add(date)
                     const avg = getAverage(curr)
-                    const color = getColor(avg)
+                    const color = getColors(avg)
                     const currInfo = {
                         dayOfWeek : date,
                         pollenColor : avg,
@@ -71,6 +80,8 @@ export default function Forecast(props){
                     }
                     newData.push(currInfo)
                 }
+
+                console.log(newData.length)
                 setData(newData)
             }catch(err){
                 setError(err)
@@ -85,13 +96,16 @@ export default function Forecast(props){
 
     return (
         <View style={styles.container}>
-            <Text style={styles.forecastTitle}>Daily Forecast</Text>
+            <View style={styles.titleContainer}>
+                <Flower strokeWidth={0.75} iconColor='black'/>
+                <Text style={styles.forecastTitle}>Daily Forecast</Text>
+            </View>
             <ScrollView horizontal contentContainerStyle={styles.scrollContainer} showHorizontalScrollIndicator={true}>
                 {forecastData.map((item,index) => (
-                    <View key={index} style={styles.card}>
+                    <View key={index} style={styles.cardStyle}>
                         <Text style={styles.cardText}>{item.dayOfWeek}</Text>
-                        <Text style={styles.cardText}>{item.color}</Text>
-                        <Text style={styles.cardText}>{item.pollen_level}</Text>
+                        <Text style={styles.cardText}>{item.pollenColor}</Text>
+                        <Text style={styles.cardText}>{item.pollenLevel}</Text>
                     </View>
                 ))}
             </ScrollView>
@@ -103,10 +117,15 @@ const styles = StyleSheet.create({
     container:{
         flex: 1,
     },
+    titleContainer:{
+        flexDirection: 'row',
+        justifyContent: 'start',
+        paddingHorizontal: 20,
+    },
     forecastTitle: {
-        fontSize: 18,
+        fontSize: 15,
         fontWeight: 'bold',
-        marginBottom: 10,
+        marginBottom: 2,
         color: '#333',
     },
     scrollContainer: {
@@ -114,17 +133,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     cardStyle: {
-        backgroundColor: '#9EF9E4',
-        borderRadius: 12,
+        backgroundColor: '#9EF9D1',
+        borderRadius: 22,
         paddingVertical: 20,
         paddingHorizontal: 15,
         alignItems: 'center',
-        justifYContent: 'center',
+        justifyContent: 'center',
         marginRight: 15,
         width: 100,
     },
     cardText: {
-        fontSize: 16,
+        fontSize: 12,
         fontWeight: '600',
         color: '#fff',
         marginBottom: 5,

@@ -24,11 +24,11 @@ export default function Home() {
                 <View style={styles.mapContainer}>
                     <HeatMap lat={45} long={-72}/>
                 </View>
-                <View style={styles.forecastContainer}>
-                    <Forecast place={'Vancouver'}/>
+                <View>
+                    <Forecast place={'california'}/>
                 </View>
-
-            </ScrollView>
+                
+                </ScrollView>
         </ScreenWrap>
     )
 }
@@ -56,14 +56,9 @@ const styles = StyleSheet.create({
     },
     
     forecastContainer: {
-        width: '90%',
-        aspectRatio: 1,
-        borderRadius: 20,
-        overflow: 'hidden',
+        width: '100%',
+        paddingHorizontal: 20, // Adds padding to both sides of the forecast component
         marginVertical: 20,
-        borderWidth: 2,
-        borderColor: '#ddd',
-        backgroundColor: '#f0f0f0',
     },
 
     top:{
