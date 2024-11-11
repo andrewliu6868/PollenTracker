@@ -1,5 +1,5 @@
 from django.urls import path, include
-from allergy_tracker.views import CreateUserView, CreateSymptomEntryView, JournalEntryListView
+from allergy_tracker.views import CreateUserView, CreateSymptomEntryView, JournalEntryListView, WeeklyJournalEntryListView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
@@ -10,4 +10,5 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='refresh'),
     path('journal/create/', CreateSymptomEntryView.as_view(), name='journal-entry-create'),
     path('journal/', JournalEntryListView.as_view(), name='journal-entry-list'),
+    path('journal/weekly/', WeeklyJournalEntryListView.as_view(), name='journal-entry-weekly-list'),
 ]
