@@ -3,6 +3,7 @@ from .models import AllergenSpecies, Medication, UserProfile, SymptomTracking, P
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import User
+from django.utils.timezone import localtime
 
 class AllergenSpeciesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -49,9 +50,15 @@ class MedicationSerializer(serializers.ModelSerializer):
         
 
 class SymptomTrackingSerializer(serializers.ModelSerializer):
+    date_created = serializers.SerializerMethodField()
     class Meta:
         model = SymptomTracking
-        fields = '__all__'
+        fields = ['id', 'user', 'symptoms', 'topAllergens', 'severity', 'notes', 'date_created']
+        read_only_fields = ['user', 'date_created']
+
+    def get_date_created(self, obj):
+        # Convert to local time and format
+        return localtime(obj.date_created).strftime('%b %d, %Y, %I:%M %p')
         
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
