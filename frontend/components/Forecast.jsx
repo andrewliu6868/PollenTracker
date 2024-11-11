@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, ScrollView } from 'react-native'
 import React, {useState, useEffect}from 'react'
 import Flower from '../assets/icons/Flower'
 import axios from 'axios'
@@ -9,7 +9,7 @@ export default function Forecast(props){
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const getLocalDate = (utcDate) => {
+    const getLocalDate = (timestamp) => {
         const date = new Date(timestamp * 1000);
 
         const daysOfWeek = ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"]
@@ -57,23 +57,40 @@ export default function Forecast(props){
         const loadForecast = async () => {
             try{
                 const data = await fetchData(props.place)
-                setData(data)
+                // forecastData should have the following fields: dayOfWeek, pollenColor, pollenLevel
+                const newData = []
+                for(let itr = 0; itr < data.length; itr++){
+                    const curr = data[itr]
+                    const date = getLocalDate(curr)
+                    const avg = getAverage(curr)
+                    const color = getColor(avg)
+                    const currInfo = {
+                        dayOfWeek : date,
+                        pollenColor : avg,
+                        pollenLevel : color,
+                    }
+                    newData.push(currInfo)
+                }
+                setData(newData)
             }catch(err){
                 setError(err)
             }finally{
                 setLoading(false)
             }
         }
-    }, [props.place])
+
+        loadForecast();
+    }, [props.place]);
 
 
     return (
-        <View style={style.container}>
+        <View style={styles.container}>
             <Text style={styles.forecastTitle}>Daily Forecast</Text>
             <ScrollView horizontal contentContainerStyle={styles.scrollContainer} showHorizontalScrollIndicator={true}>
                 {forecastData.map((item,index) => (
                     <View key={index} style={styles.card}>
-                        <Text style={styles.cardText}>{item.day}</Text>
+                        <Text style={styles.cardText}>{item.dayOfWeek}</Text>
+                        <Text style={styles.cardText}>{item.color}</Text>
                         <Text style={styles.cardText}>{item.pollen_level}</Text>
                     </View>
                 ))}
