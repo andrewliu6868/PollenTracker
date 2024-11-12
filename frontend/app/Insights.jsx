@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, Dimensions } from "react-native";
 import PieChartWithLegend from "../components/PieChartWithLegend";
+import AllergenInfoSection from "../components/AllergenInfoSection";
 import { getWeeklyJournalEntries } from "./api";
 import { theme } from "../style/theme";
 
 const screenWidth = Dimensions.get("window").width;
 const chartSize = screenWidth * 0.5;
+const gradient = theme.colors.gradients;
 
 export default function Insights() {
   const [topAllergens, setTopAllergens] = useState([]);
@@ -59,13 +61,13 @@ export default function Insights() {
   const allergenData = topAllergens.map((a, index) => ({
     value: a.count,
     label: a.name,
-    color: theme.colors.gradients.green[index % theme.colors.gradients.green.length],
+    color: gradient.green[index % gradient.green.length],
   }));
 
   const symptomData = topSymptoms.map((s, index) => ({
     value: s.count,
     label: s.name,
-    color: theme.colors.gradients.yellow[index % theme.colors.gradients.yellow.length],
+    color: gradient.yellow[index % gradient.yellow.length],
   }));
 
   return (
@@ -83,14 +85,18 @@ export default function Insights() {
           centerLabel="Top Symptoms"
         />
       </View>
+      <View style={styles.learnContainer}>
+        <Text style={styles.sectionTitle}>Learn About Your Top Allergens</Text>
+        <AllergenInfoSection />
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    backgroundColor: theme.colors.white,
+    padding: 15,
+    backgroundColor: theme.colors.primaryLight,
   },
   title: {
     fontSize: 24,
@@ -98,8 +104,22 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   chartsContainer: {
+    backgroundColor: theme.colors.white,
+    borderRadius: 15,
+    padding: 20,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
+  },
+  learnContainer: {
+    marginTop: 20,
+    backgroundColor: theme.colors.white,
+    borderRadius: 15,
+    paddingTop: 15,
+  },
+  sectionTitle: {
+    paddingHorizontal: 20,
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });

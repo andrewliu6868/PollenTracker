@@ -24,6 +24,8 @@
     "react-native": "0.74.5",
     "react-native-dotenv": "^3.4.11",
     "react-native-gifted-charts": "^1.4.47",
+    "react-native-pager-view": "^6.5.0",
+    "react-native-snap-carousel": "^3.9.1",
     "react-native-svg": "^15.7.1"
   },
   "devDependencies": {
