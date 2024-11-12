@@ -1,12 +1,13 @@
-import {View,Text} from 'react-native';
+import { View, Text } from 'react-native';
 import React from 'react';
-import {Stack} from 'expo-router';
+import { Stack } from 'expo-router';
 
-export default function _layout(){
-    // use Stack navigation, screens are stacked on top of each other like cards.
-    return (
-        <Stack
-            screenOptions={{headerShown:false}} // remove the header 
-        />
-    );
+export default function Layout() {
+
+  // Render the Stack navigator once fonts are loaded
+  return (
+    <Stack
+      screenOptions={{ headerShown: false }} // Remove the header
+    />
+  );
 }

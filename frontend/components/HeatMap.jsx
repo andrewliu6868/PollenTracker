@@ -4,6 +4,8 @@ import React, {useEffect, useState} from 'react';
 import MapView, {Marker} from 'react-native-maps';
 import {Text, View, StyleSheet, ActivityIndicator} from 'react-native';
 import Geocoder from 'react-native-geocoding';
+import MapIcon from '../assets/icons/MapIcon';
+import SearchIcon from '../assets/icons/SearchIcon';
 
 export default function HeatMap(props){
     // states to set up map
@@ -88,6 +90,10 @@ export default function HeatMap(props){
     }
     return (
         <View style={styles.container}>
+            <View style={styles.titleContainer}>
+                <MapIcon strokeWidth={0.75} iconColor='black'/>
+                <Text style={styles.forecastTitle}>Pollen HeatMap</Text>
+            </View>
             <MapView
                 style={styles.map}
                 initialRegion={{
@@ -120,6 +126,17 @@ export default function HeatMap(props){
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    titleContainer:{
+        flexDirection: 'row',
+        justifyContent: 'start',
+        paddingHorizontal: 20,
+    },
+    forecastTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 2,
+        color: '#333',
     },
     map: {
         flex: 1,

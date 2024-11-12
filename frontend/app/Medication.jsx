@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import Button from '../components/Button';
 import React, { useState, useEffect } from 'react';
 import { DataTable } from 'react-native-paper';
-import { AddMedication } from './AddMedication';
+import AddMedication from './AddMedication.jsx';
 
 export default function Medication() {
     const router = useRouter();

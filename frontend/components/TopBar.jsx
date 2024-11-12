@@ -2,9 +2,10 @@ import { View, Text, Pressable, Image, StyleSheet, TouchableOpacity } from 'reac
 import React, {useState} from 'react'
 import Menu from '../assets/icons/Menu'
 import SideDrawer from './SideDrawer'
+import * as Font from 'expo-font'
 import { theme } from '../style/theme'
 
-export default function TopBar({title, router}){
+export default function TopBar({title}){
   const [drawerVis, setDrawerVis] = useState(false);
   const toggleDrawer = () => setDrawerVis(!drawerVis);
   return (
@@ -14,7 +15,7 @@ export default function TopBar({title, router}){
         <Menu strokeWidth={0.75} iconColor='#333'/>
       </Pressable>
 
-      {drawerVis && <SideDrawer visible={drawerVis} onClose={toggleDrawer} router={router}/>}
+      {drawerVis && <SideDrawer visible={drawerVis} onClose={toggleDrawer}/>}
     </View>
   )
 }
@@ -31,9 +32,9 @@ const styles = StyleSheet.create({
         borderBottomColor: '#e0e0e0',
     },
     logoText:{
-        fontSize: 20,
+        fontFamily: 'Cursive',
+        fontSize: 24,
         fontWeight: 'bold',
-        color: '#333',
     },
     menuButton: {
         padding: 8,

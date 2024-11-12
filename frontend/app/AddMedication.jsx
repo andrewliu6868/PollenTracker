@@ -63,7 +63,7 @@ export default function AddMedication({isVisible, onClose, onAddMed}){
             <View style={styles.modalOverlay}>
                 <View style={styles.container}>
                     <Text style={styles.title}>Add Medication</Text>
-                    <TextInput style = {styles.input} placeHolder="Medication Name" value={medName} onChangeText={setMedication()}></TextInput>
+                    <TextInput style = {styles.input} placeHolder="Medication Name" value={medName} onChangeText={() => {setMedName()}}></TextInput>
                     {drop && (<FlatList
                         data = {search}
                         keyExtractor={(item, index) => index.toString()}

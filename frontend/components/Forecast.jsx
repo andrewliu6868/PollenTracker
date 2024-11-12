@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     forecastTitle: {
-        fontSize: 15,
+        fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 2,
         color: '#333',
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     cardText: {
         fontSize: 12,
         fontWeight: '600',
-        color: '#fff',
+        color: 'black',
         marginBottom: 5,
     }
 
