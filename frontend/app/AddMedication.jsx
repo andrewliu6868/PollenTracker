@@ -1,19 +1,29 @@
 import { View, Text, TextInput, Button, FlatList, StyleSheet, Modal, TouchableOpacity } from 'react-native'
 import React, {useState} from 'react'
 import DateTimePicker from '@react-native-community/datetimepicker';
+import DatePicker from 'react-native-date-picker';
+import Picker from '@react-native-picker/picker';
 import { heightP,widthP } from '../style/deviceSpecs';
 import axios from 'axios';
 import { theme } from '../style/theme';
+import { SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 
 export default function AddMedication({isVisible, onClose, onAddMed}){
     const [medName, setMedName] = useState('');
     const [remTime, setRemTime] = useState(new Date());
+    const [frequency, setFreq] = useState('hourly');
+    const [refillDate, setRefill]  = useState(new Date());
+    const [selectedMedication, setSelectedMedication] = useState(null);
+
+    const [showRefill, setShowRefill] = useState(false);
     const [showPicker, setShowPicker] = useState(false);
     const [search, setSearch] = useState([]);
     const [drop, setDrop] = useState(false);
-    const [selectedMedication, setSelectedMedication] = useState(null);
 
+    const insets = useSafeAreaInsets();
+
+    // need fields for medication name , descriptions, dosage, frequency for reminder, next refill
     // fetch med details from FDA database
     const fetchMedications = async(query) =>{
         if(query.length > 2) {
@@ -59,46 +69,68 @@ export default function AddMedication({isVisible, onClose, onAddMed}){
 
     }
     return (
-        <Modal visible={isVisible} transparent={true} animationType="slide" onRequestClose={onClose}>
-            <View style={styles.modalOverlay}>
-                <View style={styles.container}>
-                    <Text style={styles.title}>Add Medication</Text>
-                    <TextInput style = {styles.input} placeHolder="Medication Name" value={medName} onChangeText={() => {setMedName()}}></TextInput>
-                    {drop && (<FlatList
-                        data = {search}
-                        keyExtractor={(item, index) => index.toString()}
-                        renderItem={({item}) => (
-                            <TouchableOpacity onPress = {() => selectMedication({item})}>
-                                <View style={styles.dropdownItem}>
-                                    <Text>{item.openfda.brand_name ? item.openfda.brand_name[0] : ''}</Text>
-                                </View>
-                            </TouchableOpacity>
-                        )}
-                        style = {styles.dropdown}
-                    />) }
+            <Modal visible={isVisible} transparent={true} animationType="slide" onRequestClose={onClose}>
+                <SafeAreaView style={{paddingTop: insets.top, paddingBottom: insets.bottom}}>
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.container}>
+                            <Text style={styles.title}>Add Medication</Text>
 
-                    {selectedMedication && (<View style = {styles.descriptionBox}>
-                        <Text>Description:</Text>
-                        <Text>{selectedMedication.description ? selectedMedication.description[0]: 'No description found'}</Text>
-                    </View>)}
+                            <Text style = {styles.headerText}>Medication Name</Text>
 
-                    <Button title="Pick Reminder Time" onPress={() => setShowPicker(true)}/>
-                    {showPicker && (
-                        <DateTimePicker value={remTime} mode="time" display="default" onChange={(event,selectedTime) => {
-                            setShowPicker(false);
-                            if(selectedTime){
-                                setRemTime(selectedTime);
-                            }
-                        }}/>
-                    )}
+                            <TextInput style = {styles.input} placeHolder="Medication Name" value={medName} onChangeText={() => {setMedName()}}></TextInput>
+                            {drop && (<FlatList
+                                data = {search}
+                                keyExtractor={(item, index) => index.toString()}
+                                renderItem={({item}) => (
+                                    <TouchableOpacity onPress = {() => selectMedication({item})}>
+                                        <View style={styles.dropdownItem}>
+                                            <Text>{item.openfda.brand_name ? item.openfda.brand_name[0] : ''}</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                )}
+                                style = {styles.dropdown}
+                            />) }
 
-                    <View style={styles.buttonContainer}>
-                        <Button title="Save" onPress={onSubmit}/>
-                        <Button title="Close" onPress={onClose}/>
+                            {selectedMedication && (<View style = {styles.descriptionBox}>
+                                <Text>Description:</Text>
+                                <Text>{selectedMedication.description ? selectedMedication.description[0]: 'No description found'}</Text>
+                            </View>)}
+
+                            <Button title="Pick Reminder Time" onPress={() => setShowPicker(true)}/>
+                            {showPicker && (
+                                <DateTimePicker value={remTime} mode="time" display="default" onChange={(event,selectedTime) => {
+                                    setShowPicker(false);
+                                    if(selectedTime){
+                                        setRemTime(selectedTime);
+                                    }
+                                }}/>
+                            )}
+
+                            <Text style = {styles.headerText}>Setup Medication Reminders</Text>
+                            
+
+
+                            <Text style = {styles.headerText}>Next Refill Date</Text>
+                            <Button title="Select Refill Date" onPress={() => setShowRefill(true)}/>
+                            {showRefill && 
+                            (<DatePicker 
+                                modal 
+                                open={open} 
+                                date={refillDate} 
+                                onConfirm={(date) => {
+                                    setShowRefill(false);
+                                    setRefill(date);
+                                }}
+                                onCancel={() => setShowRefill(false)}
+                                />)}
+                            <View style={styles.buttonContainer}>
+                                <Button title="Save" onPress={onSubmit}/>
+                                <Button title="Close" onPress={onClose}/>
+                            </View>
+                        </View>
                     </View>
-                </View>
-            </View>
-        </Modal>
+                </SafeAreaView>
+            </Modal>
     )
 }
 
@@ -118,7 +150,12 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 20,
-    },  
+    },
+    headerText: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        marginBottom: 20,  
+    },
     input: {
         height: 40,
         borderColor: 'gray',

@@ -15,7 +15,8 @@ export default function Medication() {
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
 
     const addNewMedication = (med) => {
-        if (!med.name || !med.description || !med.time) {
+        // name, descriptions, dosage, frequency, refill
+        if (!med.name || !med.description || !med.dosage || !med.frequency || !med.refill ) {
             console.error('Incomplete medication data');
             return;
         }
@@ -54,7 +55,6 @@ export default function Medication() {
                 <TopBar title="Medication" />
                 <DataTable>
                     <DataTable.Header>
-                        <DataTable.Title>ID</DataTable.Title>
                         <DataTable.Title>Medication</DataTable.Title>
                         <DataTable.Title>Description</DataTable.Title>
                         <DataTable.Title>Reminder Time</DataTable.Title>
@@ -64,7 +64,6 @@ export default function Medication() {
                         keyExtractor={(item) => item.id.toString()}
                         renderItem={({ item }) => (
                             <DataTable.Row>
-                                <DataTable.Cell>{item.id}</DataTable.Cell>
                                 <DataTable.Cell>{item.name}</DataTable.Cell>
                                 <DataTable.Cell>{item.description}</DataTable.Cell>
                                 <DataTable.Cell>{item.time}</DataTable.Cell>
