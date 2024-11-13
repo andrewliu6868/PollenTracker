@@ -51,18 +51,18 @@ const AllergenInfoSection = () => {
               
               <View style={styles.infoSection}>
                 <View style={styles.infoItem}>
-                  <Text style={styles.infoTitle}>Where it's found</Text>
+                  <Text style={styles.infoTitle}>Where It's Found</Text>
                   <Text style={styles.infoText}>{info.location}</Text>
                 </View>
                 
                 <View style={styles.infoItem}>
-                  <Text style={styles.infoTitle}>Seasonal patterns</Text>
+                  <Text style={styles.infoTitle}>Seasonal Patterns</Text>
                   <Text style={styles.infoText}>{info.season}</Text>
                 </View>
                 
                 <View style={styles.infoItem}>
-                  <Text style={styles.infoTitle}>How to avoid</Text>
-                  <Text style={styles.infoText}>{info.avoidance}</Text>
+                  <Text style={styles.infoTitle}>How To Identify</Text>
+                  <Text style={styles.infoText}>{info.identify}</Text>
                 </View>
               </View>
             </View>
@@ -76,14 +76,14 @@ const AllergenInfoSection = () => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 390,
+    height: 395,
   },
   pagerView: {
-    height: "90%",
+    height: "92%",
   },
   pageContainer: {
     paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingVertical: 15,
   },
   card: {
     backgroundColor: theme.colors.white,
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: theme.colors.primaryLight,
-    marginBottom: 16,
+    marginBottom: 13,
   },
   infoSection: {
     gap: 16,
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 10,
     gap: 8,
   },
   dot: {
