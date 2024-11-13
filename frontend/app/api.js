@@ -87,6 +87,24 @@ export const getJournalEntries = async () => {
   }
 };
 
+export const getWeeklyJournalEntries = async () => {
+  const token = await getAuthToken();
+  if (!token) {
+    console.error('No token found');
+    return;
+  }
+
+  try {
+    const response = await api.get('/allergy_tracker/journal/weekly/', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error getting weekly journal entries:', error.response.data);
+    throw error;
+  }
+}
+
 
 export const getLatestPollenData = async (latitude, longitude) => {
 
