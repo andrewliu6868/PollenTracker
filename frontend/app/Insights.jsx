@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, Dimensions } from "react-native";
 import PieChartWithLegend from "../components/PieChartWithLegend";
 import AllergenInfoSection from "../components/AllergenInfoSection";
+import CollapsibleList from "../components/CollapsibleList";
 import { getWeeklyJournalEntries } from "./api";
 import { theme } from "../style/theme";
 
@@ -89,6 +90,9 @@ export default function Insights() {
         <Text style={styles.sectionTitle}>Learn About Your Top Allergens</Text>
         <AllergenInfoSection />
       </View>
+      <View style={styles.tipsContainer}>
+        <CollapsibleList/>
+      </View>
     </ScrollView>
   );
 }
@@ -99,9 +103,10 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primaryLight,
   },
   title: {
+    marginTop: 25,
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 15,
   },
   chartsContainer: {
     backgroundColor: theme.colors.white,
@@ -112,6 +117,12 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   learnContainer: {
+    marginTop: 20,
+    backgroundColor: theme.colors.white,
+    borderRadius: 15,
+    paddingTop: 15,
+  },
+  tipsContainer: {
     marginTop: 20,
     backgroundColor: theme.colors.white,
     borderRadius: 15,
