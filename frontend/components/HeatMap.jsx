@@ -91,32 +91,33 @@ export default function HeatMap(props){
     return (
         <View style={styles.container}>
             <View style={styles.titleContainer}>
-                <MapIcon strokeWidth={0.75} iconColor='black'/>
                 <Text style={styles.forecastTitle}>Pollen HeatMap</Text>
             </View>
-            <MapView
-                style={styles.map}
-                initialRegion={{
-                latitude: props.lat,
-                longitude: props.long,
-                latitudeDelta: 0.1,
-                longitudeDelta: 0.1,
-                }}
-            >
-                <Marker
-                coordinate={{ latitude: props.lat, longitude: props.long }}
-                pinColor={
-                    getColors(getAverage(pollenData))
-                }
-                title="Pollen Level"
-                description={`Grass: ${pollenData.grassCount}, Tree: ${pollenData.treeCount}, Weed: ${pollenData.weedCount}`}
-                />
-            </MapView>
+            <View style={styles.mapWrapper}>
+                <MapView
+                    style={styles.map}
+                    initialRegion={{
+                    latitude: props.lat,
+                    longitude: props.long,
+                    latitudeDelta: 0.1,
+                    longitudeDelta: 0.1,
+                    }}
+                >
+                    <Marker
+                    coordinate={{ latitude: props.lat, longitude: props.long }}
+                    pinColor={
+                        getColors(getAverage(pollenData))
+                    }
+                    title="Pollen Level"
+                    description={`Grass: ${pollenData.grassCount}, Tree: ${pollenData.treeCount}, Weed: ${pollenData.weedCount}`}
+                    />
+                </MapView>
+            </View>
             <View style={styles.info}>
-                <Text>Grass Pollen: {pollenData.grassCount} ({pollenData.grassRisk})</Text>
-                <Text>Tree Pollen: {pollenData.treeCount} ({pollenData.treeRisk})</Text>
-                <Text>Weed Pollen: {pollenData.weedCount} ({pollenData.weedRisk})</Text>
-                <Text>Last Updated: {new Date(pollenData.updatedAt).toLocaleString()}</Text>
+                <Text style={styles.infoText}>Grass Pollen: {pollenData.grassCount} ({pollenData.grassRisk})</Text>
+                <Text style={styles.infoText}>Tree Pollen: {pollenData.treeCount} ({pollenData.treeRisk})</Text>
+                <Text style={styles.infoText}>Weed Pollen: {pollenData.weedCount} ({pollenData.weedRisk})</Text>
+                <Text style={styles.infoText}>Last Updated: {new Date(pollenData.updatedAt).toLocaleString()}</Text>
             </View>
         </View>
     );
@@ -125,25 +126,51 @@ export default function HeatMap(props){
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        backgroundColor: '#1E1F28',
+        borderRadius: 15,
+        padding: 20,
+        marginBottom: 30,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 3,
+        width: '90%',
+        alignSelf: 'center',
     },
     titleContainer:{
         flexDirection: 'row',
-        justifyContent: 'start',
-        paddingHorizontal: 20,
+        justifyContent: 'center',
+        marginBottom: 10,
     },
     forecastTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        marginBottom: 2,
-        color: '#333',
+        color: '#fff',
+        marginLeft: 10,
+    },
+    mapWrapper: {
+        width: '100%',
+        aspectRatio: 1,
+        borderRadius: 15,
+        overflow: 'hidden',
+        marginBottom: 15,
     },
     map: {
         flex: 1,
     },
     info: {
         padding: 10,
-        backgroundColor:'#fff',
+        backgroundColor: '#2B2C36',
+        borderRadius: 10,
+        width: '100%',
+        alignItems: 'flex-start',
+    },
+    infoText: {
+        color: '#fff',
+        fontSize: 14,
+        marginBottom: 5,
     },
 });
 

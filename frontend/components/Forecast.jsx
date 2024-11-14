@@ -97,9 +97,11 @@ export default function Forecast({ place }) {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    flex: 1,
+    width: '100%',
     backgroundColor: '#1E1F28',
     borderRadius: 10,
+    overflow: 'hidden'
   },
   forecastTitle: {
     fontSize: 20,
