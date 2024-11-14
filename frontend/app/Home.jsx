@@ -18,11 +18,11 @@ export default function Home() {
 
     return (
         <ScreenWrap>
+            <View style={styles.topBarContainer}>
+                <TopBar title='PollenSense' />
+            </View>
             <LinearGradient colors={['#2E7D32', '#A5D6A7']} style={{ flex: 1 }}>
                 <SafeAreaView style={{ flex: 1, paddingTop: insets.top }}>
-                    <View style={styles.topBarContainer}>
-                        <TopBar title='PollenSense' />
-                    </View>
 
                     <ScrollView contentContainerStyle={styles.scrollContentContainer}>
                         {/* HeatMap Section */}

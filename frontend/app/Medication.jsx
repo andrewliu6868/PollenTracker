@@ -1,26 +1,56 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ScreenWrap from '../components/ScreenWrap';
 import TopBar from '../components/TopBar';
 import { useRouter } from 'expo-router';
-import Button from '../components/Button';
 import React, { useState, useEffect } from 'react';
 import AddMedication from './AddMedication.jsx';
+import EditMedication from '../components/EditMedication.jsx';
+import {v4 as uuidv4} from 'uuid';
 
 export default function Medication() {
     const router = useRouter();
-    const [loading, setLoading] = useState(false);
     const [meds, setMeds] = useState([]);
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+    const [currMed, setCurrMed] = useState();
+
+    const editSomeMedication = (med) => {
+        setCurrMed({ ...med }); 
+        setIsEditModalVisible(true);
+    };
+
+    const saveEditedMedication = (updatedMed) => {
+        const updatedMeds = meds.map((med) => (med.id === updatedMed.id ? updatedMed : med));
+        setMeds(updatedMeds);
+        saveMedsToStorage(updatedMeds);
+    };
 
     const addNewMedication = (med) => {
         if (!med.name || !med.description || !med.dosage || !med.frequency || !med.refillDate) {
-            console.error('Incomplete medication data');
+            Alert.alert('Error', 'Please enter all required fields');
             return;
         }
-        const newMed = { id: Date.now(), ...med };
-        setMeds([...meds, newMed]);
+        
+        const newMed = {
+            id: uuidv4(),
+            name: med.name,
+            description: med.description,
+            dosage: med.dosage,
+            frequency: med.frequency,
+            reminderTimes: med.reminderTimes || [],
+            repeatCount: med.repeatCount || 1,
+            startDate: med.startDate || new Date(),
+            endDate: med.endDate || new Date(),
+            refillDate: med.refillDate || new Date(),
+            refillReminder: med.refillReminder || false,
+        };
+        
+        const updatedMeds = [...meds, newMed];
+        setMeds(updatedMeds);
+        saveMedsToStorage(updatedMeds);
     };
+    
 
     const saveMedsToStorage = async (medications) => {
         try {
@@ -47,13 +77,26 @@ export default function Medication() {
         saveMedsToStorage(meds);
     }, [meds]);
 
+
     const renderMedicationItem = ({ item }) => (
-        <View style={styles.medicationRow}>
-            <Text style={styles.cell}>{item.name}</Text>
-            <Text style={styles.cell}>{item.description}</Text>
-            <Text style={styles.cell}>{item.dosage}</Text>
-            <Text style={styles.cell}>{item.frequency}</Text>
-            <Text style={styles.cell}>{item.refillDate}</Text>
+        <TouchableOpacity onPress={() => editSomeMedication(item)}>
+            <View style={styles.row}>
+                <Text style={styles.cell}>{item.name}</Text>
+                <Text style={styles.cell}>{item.description}</Text>
+                <Text style={styles.cell}>{item.dosage}</Text>
+                <Text style={styles.cell}>{item.frequency} times/day</Text>
+                <Text style={styles.cell}>{item.refillDate}</Text>
+            </View>
+       </TouchableOpacity>
+    );
+
+    const renderTableHeader = () => (
+        <View style={styles.headerRow}>
+            <Text style={styles.headerCell}>Medication</Text>
+            <Text style={styles.headerCell}>Description</Text>
+            <Text style={styles.headerCell}>Dosage</Text>
+            <Text style={styles.headerCell}>Frequency</Text>
+            <Text style={styles.headerCell}>Refill Date</Text>
         </View>
     );
 
@@ -61,17 +104,11 @@ export default function Medication() {
         <ScreenWrap>
             <View style={styles.container}>
                 <TopBar title="Medication" />
-                <View style={styles.tableHeader}>
-                    <Text style={styles.headerCell}>Medication</Text>
-                    <Text style={styles.headerCell}>Description</Text>
-                    <Text style={styles.headerCell}>Dosage</Text>
-                    <Text style={styles.headerCell}>Frequency</Text>
-                    <Text style={styles.headerCell}>Refill Date</Text>
-                </View>
                 <FlatList
                     data={meds}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={renderMedicationItem}
+                    ListHeaderComponent={renderTableHeader}
                     contentContainerStyle={styles.listContainer}
                 />
                 <TouchableOpacity
@@ -85,6 +122,12 @@ export default function Medication() {
                     onClose={() => setIsAddModalVisible(false)}
                     onAddMed={addNewMedication}
                 />
+                <EditMedication
+                    isVisible={isEditModalVisible}
+                    onClose={() => setIsEditModalVisible(false)}
+                    onSaveEdit={saveEditedMedication}
+                    medication={currMed}
+                />
             </View>
         </ScreenWrap>
     );
@@ -95,35 +138,38 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 20,
     },
-    tableHeader: {
+    headerRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         backgroundColor: '#eee',
-        paddingVertical: 10,
-        paddingHorizontal: 5,
-        borderRadius: 5,
-        marginBottom: 10,
+        borderBottomWidth: 2,
+        borderColor: '#ccc',
+        alignItems: 'center',
+    },
+    row: {
+        flexDirection: 'row',
+        borderBottomWidth: 1,
+        borderColor: '#ddd',
+        alignItems: 'center',
     },
     headerCell: {
-        flex: 1,
-        fontWeight: 'bold',
+        minWidth: 120,
+        padding: 10,
         textAlign: 'center',
+        fontWeight: 'bold',
+        borderRightWidth: 1,
+        borderColor: '#ddd',
+        backgroundColor: '#f5f5f5',
+        overflow: 'hidden',
+    },
+    cell: {
+        minWidth: 120,
+        padding: 10,
+        textAlign: 'center',
+        borderRightWidth: 1,
+        borderColor: '#ddd',
     },
     listContainer: {
         flexGrow: 1,
-    },
-    medicationRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        backgroundColor: '#fff',
-        paddingVertical: 10,
-        paddingHorizontal: 5,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
-    },
-    cell: {
-        flex: 1,
-        textAlign: 'center',
     },
     addButton: {
         position: 'absolute',

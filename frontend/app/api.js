@@ -41,3 +41,28 @@ export const registerUser = async (email, password, password2, username, firstNa
     throw error;
   }
 };
+
+
+// Function to schedule medication reminders
+export const scheduleMedicationReminder = async (userId, medicationId, message, scheduleTime, token) => {
+  try {
+    const response = await api.post(
+      '/allergy_tracker/notifications/',
+      {
+        user: userId,
+        medication: medicationId,
+        message,
+        schedule_time: scheduleTime,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error scheduling medication reminder:', error.response?.data || error);
+    throw error;
+  }
+};

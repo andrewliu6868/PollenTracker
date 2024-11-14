@@ -1,11 +1,11 @@
-import { View, Text, TextInput, Button, ScrollView, StyleSheet, Modal, TouchableOpacity, Switch } from 'react-native';
-import React, { useState } from 'react';
+import { View, Text, TextInput, Button, ScrollView, StyleSheet, Modal, Switch } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function AddMedication({ isVisible, onClose, onAddMed }) {
+export default function EditMedication({ isVisible, onClose, onSaveEdit, medication }) {
   const [medName, setMedName] = useState('');
   const [medDesc, setMedDesc] = useState('');
   const [dosage, setDosage] = useState('');
@@ -15,12 +15,48 @@ export default function AddMedication({ isVisible, onClose, onAddMed }) {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [refillDate, setRefillDate] = useState(new Date());
-  const [useSearch, setUseSearch] = useState(true);
   const [refillReminder, setRefillReminder] = useState(false);
-  const [showPicker, setShowPicker] = useState(false);
   const [selectedPickerIndex, setSelectedPickerIndex] = useState(null);
 
   const insets = useSafeAreaInsets();
+    // load in existing medication for the current medication
+    useEffect(() => {
+        if (medication) {
+            setMedName(medication.name || '');
+            setMedDesc(medication.description || '');
+            setDosage(medication.dosage || '');
+            setFrequency(medication.frequency || 1);
+            setReminderTimes(medication.reminderTimes || []);
+            setRepeatCount(medication.repeatCount || 1);
+            setStartDate(medication.startDate ? new Date(medication.startDate) : new Date());
+            setEndDate(medication.endDate ? new Date(medication.endDate) : new Date());
+            setRefillDate(medication.refillDate ? new Date(medication.refillDate) : new Date());
+            setRefillReminder(!!medication.refillReminder);
+        }
+    }, [medication]);
+
+    const onSave = () => {
+        if (!medName || !medDesc || dosage === '') {
+            alert('Error: Please enter all medication details!');
+            return;
+        }
+    
+        onSaveEdit({
+            id: medication.id,
+            name: medName,
+            description: medDesc,
+            dosage,
+            frequency,
+            reminderTimes,
+            repeatCount,
+            startDate: startDate.toDateString(),
+            endDate: endDate.toDateString(),
+            refillDate: refillReminder ? refillDate.toDateString() : null,
+            refillReminder,
+        });
+    
+        onClose();
+    };
 
   // set frequency state
   const handleFreqChange = (freq) => {
@@ -31,86 +67,30 @@ export default function AddMedication({ isVisible, onClose, onAddMed }) {
   // set newReminderTimes
   const handleReminderTimeChange = (index, event, newTime) => {
     const updated = [...reminderTimes]
-    updatedTimes[index] = newTime || updated[index]
+    updated[index] = newTime || updated[index]
     setReminderTimes(updated);
   }
 
-  // fetch medication data from the FDA database
-  const fetchMedications = async (query) => {
-    if (query.length > 2) {
-      try {
-        const response = await axios.get(`https://api.fda.gov/drug/label.json?search=${query}&limit=10`);
-        setSearch(response.data.results);
-        setDrop(true);
-      } catch (err) {
-        console.error('Error fetching medication data: ', err);
-        setSearch([]);
-      }
-    } else {
-      setSearch([]);
-      setDrop(false);
-    }
-  };
-
-  const onSubmit = () => {
-    if (!medName || !medDesc || dosage === '') {
-      alert('Error: Please enter all medication details!');
-      return;
-    }
-  
-    // Call the onAddMed function passed as a prop
-    onAddMed({
-      name: medName,
-      description: medDesc,
-      dosage,
-      frequency,
-      reminderTimes,
-      refillDate: refillReminder ? refillDate.toDateString() : null,
-    });
-  
-    // Clear inputs and close modal
-    setMedName('');
-    setMedDesc('');
-    setDosage('');
-    setFrequency(1);
-    setReminderTimes([]);
-    setRefillDate(new Date());
-    setRefillReminder(false);
-    onClose();
-  };
-  
 
   return (
     <Modal visible={isVisible} transparent={true} animationType="slide" onRequestClose={onClose}>
       <SafeAreaView style={{ paddingTop: insets.top, flex: 1 }}>
         <ScrollView contentContainerStyle={styles.container}>
-          <Text style={styles.title}>Add Medication</Text>
-          <View style={styles.switchContainer}>
-            <Text>Search in OpenFDA</Text>
-            <Switch value={useSearch} onValueChange={(value) => setUseSearch(value)} />
-          </View>
-          {useSearch ? (
+          <Text style={styles.title}>Edit Medication</Text>
+
             <TextInput
-              style={styles.input}
-              placeholder="Search Medication"
-              onChangeText={(query) => fetchMedications(query)}
-            />
-          ) : (
-            <>
-              <TextInput
                 style={styles.input}
                 placeholder="Medication Name"
                 value={medName}
                 onChangeText={setMedName}
-              />
-              <TextInput
+            />
+            
+            <TextInput
                 style={styles.input}
                 placeholder="Medication Description"
                 value={medDesc}
                 onChangeText={setMedDesc}
-              />
-            </>
-          )}
+            />
 
           <Text style={styles.headerText}>Dosage</Text>
           <TextInput
@@ -164,7 +144,7 @@ export default function AddMedication({ isVisible, onClose, onAddMed }) {
             <DateTimePicker value={refillDate} mode="date" onChange={(e, date) => setRefillDate(date)} />
           )}
 
-          <Button title="Save Medication" onPress={onSubmit} />
+          <Button title="Save Changes" onPress={onSave} />
           <Button title="Close" onPress={onClose} />
         </ScrollView>
       </SafeAreaView>
