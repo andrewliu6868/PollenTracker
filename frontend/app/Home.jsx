@@ -1,50 +1,50 @@
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
 import ScreenWrap from '../components/ScreenWrap';
 import { StatusBar } from 'expo-status-bar';
-import Menu from '../assets/icons/Menu';
 import { heightP, widthP } from '../style/deviceSpecs.js';
 import { theme } from '../style/theme.js';
 import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
-import Button from '../components/Button.jsx';
 import TopBar from '../components/TopBar.jsx';
-import MapView from 'react-native-maps';
 import HeatMap from '../components/HeatMap.jsx';
 import Forecast from '../components/Forecast.jsx';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Home() {
     const router = useRouter();
+    const insets = useSafeAreaInsets();
     const [loading, setLoading] = useState(false);
-    
+
     return (
         <ScreenWrap>
-            {/* Top Bar */}
-            <View style={styles.container}>
-                <TopBar title='PollenSense' />
-            </View>
-
-            {/* Scrollable Content */}
-            <ScrollView contentContainerStyle={styles.scrollContentContainer}>
-                {/* HeatMap Section */}
-                <View style={styles.mapContainer}>
-                    <HeatMap lat={45} long={-72} />
+            <SafeAreaView style={{ flex: 1, paddingTop: insets.top }}>
+                <View style={styles.topBarContainer}>
+                    <TopBar title='PollenSense' />
                 </View>
 
-                {/* Forecast Section */}
-                <Forecast place={'california'} />
-            </ScrollView>
+                <ScrollView contentContainerStyle={styles.scrollContentContainer}>
+                    <View style={styles.mapContainer}>
+                        <HeatMap lat={45} long={-72} />
+                    </View>
+
+                    <View style={styles.forecastWrapper}>
+                        <Forecast place={'california'} />
+                    </View>
+                </ScrollView>
+            </SafeAreaView>
         </ScreenWrap>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
+    topBarContainer: {
+        paddingHorizontal: 20,
+        paddingBottom: 10,
+        backgroundColor: theme.colors.white,
     },
 
     scrollContentContainer: {
         alignItems: 'center',
-        justifyContent: 'center',
         paddingVertical: 20,
     },
 
@@ -65,7 +65,6 @@ const styles = StyleSheet.create({
         paddingVertical: 20,
         backgroundColor: '#fff',
         borderRadius: 15,
-        marginTop: 20,
         marginBottom: 30,
         alignItems: 'center',
         shadowColor: '#000',
@@ -73,25 +72,5 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 5,
         elevation: 3,
-    },
-
-
-
-    top: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 12,
-        marginHorizontal: widthP(5),
-    },
-
-    map: {
-        flex: 1,
-    },
-
-    appName: {
-        color: theme.colors.text,
-        fontSize: heightP(3.5),
-        fontWeight: theme.fonts.bold,
     },
 });

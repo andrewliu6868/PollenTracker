@@ -1,187 +1,220 @@
-import { View, Text, TextInput, Button, FlatList, StyleSheet, Modal, TouchableOpacity } from 'react-native'
-import React, {useState} from 'react'
+import { View, Text, TextInput, Button, FlatList, StyleSheet, Modal, TouchableOpacity, Switch } from 'react-native';
+import React, { useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import DatePicker from 'react-native-date-picker';
-import Picker from '@react-native-picker/picker';
-import { heightP,widthP } from '../style/deviceSpecs';
+import { Picker } from '@react-native-picker/picker';
+import { heightP, widthP } from '../style/deviceSpecs';
 import axios from 'axios';
 import { theme } from '../style/theme';
-import { SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+export default function AddMedication({ isVisible, onClose, onAddMed }) {
+  const [medName, setMedName] = useState('');
+  const [medDesc, setMedDesc] = useState('');
+  const [dosage, setDosage] = useState('');
+  const [frequency, setFreq] = useState('daily');
+  const [refillDate, setRefill] = useState(new Date());
+  const [useSearch, setUseSearch] = useState(true);
+  const [selectedMedication, setSelectedMedication] = useState(null);
 
-export default function AddMedication({isVisible, onClose, onAddMed}){
-    const [medName, setMedName] = useState('');
-    const [remTime, setRemTime] = useState(new Date());
-    const [frequency, setFreq] = useState('hourly');
-    const [refillDate, setRefill]  = useState(new Date());
-    const [selectedMedication, setSelectedMedication] = useState(null);
+  const [showPicker, setShowPicker] = useState(false);
+  const [search, setSearch] = useState([]);
+  const [drop, setDrop] = useState(false);
 
-    const [showRefill, setShowRefill] = useState(false);
-    const [showPicker, setShowPicker] = useState(false);
-    const [search, setSearch] = useState([]);
-    const [drop, setDrop] = useState(false);
+  const insets = useSafeAreaInsets();
 
-    const insets = useSafeAreaInsets();
-
-    // need fields for medication name , descriptions, dosage, frequency for reminder, next refill
-    // fetch med details from FDA database
-    const fetchMedications = async(query) =>{
-        if(query.length > 2) {
-            try{
-                const response = await axios.get('`https://api.fda.gov/drug/label.json?search=${query}&limit=10`');
-                setSearch(response.data.results);
-                setDrop(true);
-            } catch(err){
-                console.error('Error fetching medication data: ', err);
-                setSearch([]);
-            }
-        } else {
-            setSearch([])
-            setDrop(false);
-        }
+  // Fetch medication data from the FDA database
+  const fetchMedications = async (query) => {
+    if (query.length > 2) {
+      try {
+        const response = await axios.get(`https://api.fda.gov/drug/label.json?search=${query}&limit=10`);
+        setSearch(response.data.results);
+        setDrop(true);
+      } catch (err) {
+        console.error('Error fetching medication data: ', err);
+        setSearch([]);
+      }
+    } else {
+      setSearch([]);
+      setDrop(false);
     }
+  };
 
-    const selectMedication = (med) => {
-        setMedName(medication.openfda.brand_name ? medication.openfda.brand_name[0] : '');
-        setSelectedMedication(med);
-        setDrop(false);
+  const selectMedication = (med) => {
+    const name = med.openfda.brand_name ? med.openfda.brand_name[0] : '';
+    const desc = med.description ? med.description[0] : 'No description available';
+    setMedName(name);
+    setMedDesc(desc);
+    setSelectedMedication(med);
+    setDrop(false);
+  };
+
+  const onSubmit = () => {
+    if (!medName || (!medDesc && useSearch)) {
+      alert('Error: Please enter all medication details!');
+      return;
     }
+    onAddMed({
+      name: medName,
+      description: medDesc,
+      dosage,
+      frequency,
+      duration,
+      refillDate: refillDate.toDateString(),
+    });
 
-    const onSubmit = () => {
-        // error checking
-        if(!medName){
-            alert("Error: Please enter all medication details!");
-            return;
-        }
-        // pass medication details to parent
-        onAddMed({
-            name: medName,
-            description: selectedMedication ? selectedMedication.description[0] : '',
-            time: remTime.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}),
-        })
+    // Reset fields
+    setMedName('');
+    setMedDesc('');
+    setSelectedMedication(null);
+    setFrequency('daily');
+    setRefill(new Date());
+    setUseSearch(true);
+    onClose();
+  };
 
-        // reset fields and close the modal
-        setMedName('');
-        setSelectedMedication(null);
-        setRemTime(new Date());
-        onClose();
+  return (
+    <Modal visible={isVisible} transparent={true} animationType="slide" onRequestClose={onClose}>
+      <SafeAreaView style={{ paddingTop: insets.top, paddingBottom: insets.bottom, flex: 1 }}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.container}>
+            <Text style={styles.title}>Add Medication</Text>
 
+            {/* Toggle between search and manual entry */}
+            <View style={styles.switchContainer}>
+              <Text>Search in OpenFDA database</Text>
+              <Switch value={useSearch} onValueChange={(value) => setUseSearch(value)} />
+              <Text>Manual Entry</Text>
+            </View>
 
-    }
-    return (
-            <Modal visible={isVisible} transparent={true} animationType="slide" onRequestClose={onClose}>
-                <SafeAreaView style={{paddingTop: insets.top, paddingBottom: insets.bottom}}>
-                    <View style={styles.modalOverlay}>
-                        <View style={styles.container}>
-                            <Text style={styles.title}>Add Medication</Text>
-
-                            <Text style = {styles.headerText}>Medication Name</Text>
-
-                            <TextInput style = {styles.input} placeHolder="Medication Name" value={medName} onChangeText={() => {setMedName()}}></TextInput>
-                            {drop && (<FlatList
-                                data = {search}
-                                keyExtractor={(item, index) => index.toString()}
-                                renderItem={({item}) => (
-                                    <TouchableOpacity onPress = {() => selectMedication({item})}>
-                                        <View style={styles.dropdownItem}>
-                                            <Text>{item.openfda.brand_name ? item.openfda.brand_name[0] : ''}</Text>
-                                        </View>
-                                    </TouchableOpacity>
-                                )}
-                                style = {styles.dropdown}
-                            />) }
-
-                            {selectedMedication && (<View style = {styles.descriptionBox}>
-                                <Text>Description:</Text>
-                                <Text>{selectedMedication.description ? selectedMedication.description[0]: 'No description found'}</Text>
-                            </View>)}
-
-                            <Button title="Pick Reminder Time" onPress={() => setShowPicker(true)}/>
-                            {showPicker && (
-                                <DateTimePicker value={remTime} mode="time" display="default" onChange={(event,selectedTime) => {
-                                    setShowPicker(false);
-                                    if(selectedTime){
-                                        setRemTime(selectedTime);
-                                    }
-                                }}/>
-                            )}
-
-                            <Text style = {styles.headerText}>Setup Medication Reminders</Text>
-                            
-
-
-                            <Text style = {styles.headerText}>Next Refill Date</Text>
-                            <Button title="Select Refill Date" onPress={() => setShowRefill(true)}/>
-                            {showRefill && 
-                            (<DatePicker 
-                                modal 
-                                open={open} 
-                                date={refillDate} 
-                                onConfirm={(date) => {
-                                    setShowRefill(false);
-                                    setRefill(date);
-                                }}
-                                onCancel={() => setShowRefill(false)}
-                                />)}
-                            <View style={styles.buttonContainer}>
-                                <Button title="Save" onPress={onSubmit}/>
-                                <Button title="Close" onPress={onClose}/>
-                            </View>
+            {useSearch ? (
+              <>
+                <Text style={styles.headerText}>Search Medication</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter Medication Name"
+                  onChangeText={fetchMedications}
+                />
+                {drop && (
+                  <FlatList
+                    data={search}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity onPress={() => selectMedication(item)}>
+                        <View style={styles.dropdownItem}>
+                          <Text>{item.openfda.brand_name ? item.openfda.brand_name[0] : ''}</Text>
                         </View>
-                    </View>
-                </SafeAreaView>
-            </Modal>
-    )
+                      </TouchableOpacity>
+                    )}
+                    style={styles.dropdown}
+                  />
+                )}
+                {selectedMedication && (
+                  <View style={styles.descriptionBox}>
+                    <Text>Description:</Text>
+                    <Text>{medDesc}</Text>
+                  </View>
+                )}
+              </>
+            ) : (
+              <>
+                <Text style={styles.headerText}>Medication Name</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter medication name"
+                  value={medName}
+                  onChangeText={setMedName}
+                />
+                <Text style={styles.headerText}>Description and Instructions</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter medication details"
+                  value={medDesc}
+                  onChangeText={setMedDesc}
+                />
+              </>
+            )}
+
+            <Text style={styles.headerText}>Dosage</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter dosage (e.g., 2 pills)"
+              value={dosage}
+              onChangeText={setDosage}
+            />
+
+            <Text style={styles.headerText}>Frequency</Text>
+            <Picker selectedValue={frequency} onValueChange={setFreq} style={styles.picker}>
+              <Picker.Item label="Once a day" value="daily" />
+              <Picker.Item label="Twice a day" value="twice-daily" />
+              <Picker.Item label="Every 6 hours" value="6-hours" />
+              <Picker.Item label="Every 8 hours" value="8-hours" />
+              <Picker.Item label="Every 12 hours" value="12-hours" />
+            </Picker>
+
+            <Button title="Pick Reminder Date" onPress={() => setShowPicker(true)} />
+            {showPicker && (
+              <DateTimePicker
+                value={refillDate}
+                mode="time"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  setShowPicker(false);
+                  if (selectedDate){
+                    setRefill(selectedDate);
+                  }
+                }}
+              />
+            )}
+
+            <View style={styles.buttonContainer}>
+              <Button title="Save" onPress={onSubmit} />
+              <Button title="Close" onPress={onClose} />
+            </View>
+          </View>
+        </View>
+      </SafeAreaView>
+    </Modal>
+  );
 }
 
 const styles = StyleSheet.create({
-    overlay: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    container: {
-        backgroundColor: '#fff',
-        padding: 20,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-    },
-    title: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 20,
-    },
-    headerText: {
-        fontSize: 12,
-        fontWeight: 'bold',
-        marginBottom: 20,  
-    },
-    input: {
-        height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
-        marginBottom: 20,
-        paddingHorizontal: 10,
-    },
-    dropdown:{
-        maxHeight: 150,
-        borderColor: 'gray',
-        borderWidth: 1,
-        marginBottom: 20,
-    },
-    dropdownItem: {
-        padding: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
-    },
-    descriptionBox: {
-        marginBottom: 20,
-        padding: 10,
-        backgroundColor: '#f9f9f9',
-        borderRadius: 5,
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-})
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  container: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    flex: 1,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  dropdownItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  descriptionBox: {
+    marginVertical: 10,
+    padding: 10,
+    backgroundColor: '#f9f9f9',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+});

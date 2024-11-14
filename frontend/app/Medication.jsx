@@ -5,7 +5,6 @@ import TopBar from '../components/TopBar';
 import { useRouter } from 'expo-router';
 import Button from '../components/Button';
 import React, { useState, useEffect } from 'react';
-import { DataTable } from 'react-native-paper';
 import AddMedication from './AddMedication.jsx';
 
 export default function Medication() {
@@ -15,8 +14,7 @@ export default function Medication() {
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
 
     const addNewMedication = (med) => {
-        // name, descriptions, dosage, frequency, refill
-        if (!med.name || !med.description || !med.dosage || !med.frequency || !med.refill ) {
+        if (!med.name || !med.description || !med.dosage || !med.frequency || !med.refillDate) {
             console.error('Incomplete medication data');
             return;
         }
@@ -49,28 +47,33 @@ export default function Medication() {
         saveMedsToStorage(meds);
     }, [meds]);
 
+    const renderMedicationItem = ({ item }) => (
+        <View style={styles.medicationRow}>
+            <Text style={styles.cell}>{item.name}</Text>
+            <Text style={styles.cell}>{item.description}</Text>
+            <Text style={styles.cell}>{item.dosage}</Text>
+            <Text style={styles.cell}>{item.frequency}</Text>
+            <Text style={styles.cell}>{item.refillDate}</Text>
+        </View>
+    );
+
     return (
         <ScreenWrap>
             <View style={styles.container}>
                 <TopBar title="Medication" />
-                <DataTable>
-                    <DataTable.Header>
-                        <DataTable.Title>Medication</DataTable.Title>
-                        <DataTable.Title>Description</DataTable.Title>
-                        <DataTable.Title>Reminder Time</DataTable.Title>
-                    </DataTable.Header>
-                    <FlatList
-                        data={meds}
-                        keyExtractor={(item) => item.id.toString()}
-                        renderItem={({ item }) => (
-                            <DataTable.Row>
-                                <DataTable.Cell>{item.name}</DataTable.Cell>
-                                <DataTable.Cell>{item.description}</DataTable.Cell>
-                                <DataTable.Cell>{item.time}</DataTable.Cell>
-                            </DataTable.Row>
-                        )}
-                    />
-                </DataTable>
+                <View style={styles.tableHeader}>
+                    <Text style={styles.headerCell}>Medication</Text>
+                    <Text style={styles.headerCell}>Description</Text>
+                    <Text style={styles.headerCell}>Dosage</Text>
+                    <Text style={styles.headerCell}>Frequency</Text>
+                    <Text style={styles.headerCell}>Refill Date</Text>
+                </View>
+                <FlatList
+                    data={meds}
+                    keyExtractor={(item) => item.id.toString()}
+                    renderItem={renderMedicationItem}
+                    contentContainerStyle={styles.listContainer}
+                />
                 <TouchableOpacity
                     style={styles.addButton}
                     onPress={() => setIsAddModalVisible(true)}
@@ -80,7 +83,7 @@ export default function Medication() {
                 <AddMedication
                     isVisible={isAddModalVisible}
                     onClose={() => setIsAddModalVisible(false)}
-                    onAddMedication={addNewMedication}
+                    onAddMed={addNewMedication}
                 />
             </View>
         </ScreenWrap>
@@ -90,6 +93,37 @@ export default function Medication() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        padding: 20,
+    },
+    tableHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        backgroundColor: '#eee',
+        paddingVertical: 10,
+        paddingHorizontal: 5,
+        borderRadius: 5,
+        marginBottom: 10,
+    },
+    headerCell: {
+        flex: 1,
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    listContainer: {
+        flexGrow: 1,
+    },
+    medicationRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        backgroundColor: '#fff',
+        paddingVertical: 10,
+        paddingHorizontal: 5,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+    },
+    cell: {
+        flex: 1,
+        textAlign: 'center',
     },
     addButton: {
         position: 'absolute',
