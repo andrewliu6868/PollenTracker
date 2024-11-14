@@ -31,9 +31,7 @@ export default function Home() {
                 </View>
 
                 {/* Forecast Section */}
-                <View style={styles.forecastWrapper}>
-                    <Forecast place={'california'} />
-                </View>
+                <Forecast place={'california'} />
             </ScrollView>
         </ScreenWrap>
     );

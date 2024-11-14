@@ -1,44 +1,26 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native'
-import React, {useState, useEffect}from 'react'
+import { View, Text, StyleSheet, Animated, FlatList } from 'react-native'
+import React, {useState, useEffect, useRef}from 'react'
 import Flower from '../assets/icons/Flower'
 import axios from 'axios'
 import { AMBEE_API_KEY } from '@env'
+import {LinearGradient} from 'expo-linear-gradient';
+import { FontAwesome5 } from '@expo/vector-icons';
+
 
 export default function Forecast(props){
     const [forecastData, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [selectedDay, setDay] = useState(null);
+    const animation = useRef(new Animated.Value(1)).current;
 
     const getLocalDate = (timestamp) => {
         const date = new Date(timestamp * 1000);
-
         const daysOfWeek = ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"]
-
-        // console.log(daysOfWeek[date.getDay()])
 
         return daysOfWeek[date.getDay()];
     }
 
-    const getColors = (level) => {
-        if (level == 'Low'){
-            return 'green'
-        }else if (level == 'Moderate'){
-            return 'yellow'
-        }else if (level == 'High'){
-            return 'orange'
-        }else{
-            return 'red'
-        }
-    }
-
-    const getAverage = (pData) => {
-        const levelToNum={'Low': 1, 'Moderate': 2, 'High': 3, 'Very High': 4}
-        const numToLevel={ 1 : 'Low', 2 : 'Moderate', 3 : 'High', 4 : 'Very High'}
-        // error handling
-        if (!pData.treeRisk || !pData.weedRisk || !pData.grassRisk) return 'Low';
-        let avg = (levelToNum[pData.treeRisk] + levelToNum[pData.weedRisk] + levelToNum[pData.grassRisk]) / 3;
-        return numToLevel[Math.round(avg)]
-    }
 
     const fetchData = async (place) => {
         try{
@@ -53,6 +35,16 @@ export default function Forecast(props){
             console.error('Error: Unable to fetch data from the location',err)
             throw err
         }
+    }
+
+    const handlePress = (index) => {
+        setDay(index);
+        animation.setValue(0.9);
+        Animated.spring(animation, {
+            toValue: 1,
+            friction: 3,
+            useNativeDriver: true,
+        }).start();
     }
 
     useEffect(() => {
@@ -71,16 +63,17 @@ export default function Forecast(props){
                         continue;
                     }
                     firstDays.add(date)
-                    const avg = getAverage(curr)
-                    const color = getColors(avg)
+                    const treeCount = curr.Count.tree_pollen;
+                    const grassCount = curr.Count.grass_pollen;
+                    const weedCount = curr.Count.weed_pollen;
                     const currInfo = {
                         dayOfWeek : date,
-                        pollenColor : avg,
-                        pollenLevel : color,
+                        treeLevel : treeCount,
+                        grassLevel : grassCount,
+                        weedLevel : weedCount,
                     }
                     newData.push(currInfo)
                 }
-
                 console.log(newData.length)
                 setData(newData)
             }catch(err){
@@ -94,65 +87,96 @@ export default function Forecast(props){
     }, [props.place]);
 
 
-    return (
-        <View style={styles.container}>
-            <View style={styles.titleContainer}>
-                <Flower strokeWidth={0.75} iconColor='black'/>
-                <Text style={styles.forecastTitle}>Daily Forecast</Text>
+    const renderItem = ({ item }) => (
+        <View style={styles.row}>
+          <Text style={styles.dayText}>{item.dayOfWeek}</Text>
+          <View style={styles.iconRow}>
+            <FontAwesome5 name="tree" size={20} color="green" />
+            <View style={styles.barContainer}>
+              <View style={[styles.bar, { width: `${item.treeLevel}%` }]} />
             </View>
-            <ScrollView horizontal contentContainerStyle={styles.scrollContainer} showHorizontalScrollIndicator={true}>
-                {forecastData.map((item,index) => (
-                    <View key={index} style={styles.cardStyle}>
-                        <Text style={styles.cardText}>{item.dayOfWeek}</Text>
-                        <Text style={styles.cardText}>{item.pollenColor}</Text>
-                        <Text style={styles.cardText}>{item.pollenLevel}</Text>
-                    </View>
-                ))}
-            </ScrollView>
+            <Text style={styles.levelText}>{item.treeLevel}</Text>
+          </View>
+          <View style={styles.iconRow}>
+            <FontAwesome5 name="seedling" size={20} color="darkgreen" />
+            <View style={styles.barContainer}>
+              <View style={[styles.bar, { width: `${item.grassLevel}%` }]} />
+            </View>
+            <Text style={styles.levelText}>{item.grassLevel}</Text>
+          </View>
+          <View style={styles.iconRow}>
+            <FontAwesome5 name="spa" size={20} color="orange" />
+            <View style={styles.barContainer}>
+              <View style={[styles.bar, { width: `${item.weedLevel}%` }]} />
+            </View>
+            <Text style={styles.levelText}>{item.weedLevel}</Text>
+          </View>
         </View>
-    )
-}
-
-const styles = StyleSheet.create({
-    container:{
-        flex: 1,
-    },
-    titleContainer:{
-        flexDirection: 'row',
-        justifyContent: 'start',
-        paddingHorizontal: 20,
-    },
-    forecastTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 2,
-        color: '#333',
-    },
-    scrollContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    cardStyle: {
-        backgroundColor: '#9EF9D1',
-        borderRadius: 22,
-        paddingVertical: 20,
-        paddingHorizontal: 15,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 15,
-        width: 100,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 3,
-    },
-    cardText: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: 'black',
-        marginBottom: 5,
+      );
+    
+      return (
+        <View style={styles.container}>
+          <Text style={styles.forecastTitle}>5-Day Pollen Forecast</Text>
+          {loading ? (
+            <Text>Loading...</Text>
+          ) : error ? (
+            <Text>Error: {error}</Text>
+          ) : (
+            <FlatList
+              data={forecastData}
+              renderItem={renderItem}
+              keyExtractor={(item, index) => index.toString()}
+            />
+          )}
+        </View>
+      );
     }
-
-
-})
+    
+    const styles = StyleSheet.create({
+      container: {
+        padding: 20,
+        backgroundColor: '#1E1F28',
+        borderRadius: 10,
+      },
+      forecastTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#fff',
+        marginBottom: 15,
+      },
+      row: {
+        flexDirection: 'column',
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#333',
+        marginBottom: 10,
+      },
+      dayText: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#fff',
+        marginBottom: 5,
+      },
+      iconRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+      },
+      barContainer: {
+        flex: 1,
+        height: 8,
+        backgroundColor: '#333',
+        borderRadius: 4,
+        marginHorizontal: 10,
+      },
+      bar: {
+        height: 8,
+        backgroundColor: '#00BCD4',
+        borderRadius: 4,
+      },
+      levelText: {
+        width: 40,
+        textAlign: 'right',
+        color: '#fff',
+      },
+    });
