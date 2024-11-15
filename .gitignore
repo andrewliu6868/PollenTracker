@@ -39,3 +39,7 @@ backend/myenv/
 
 # environment variables
 .env
+
+backend/backend/pycache/
+
+backend/allergy_tracker/__pycache__/

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from datetime import timedelta
 
 # Create your models here.
     
@@ -11,7 +12,6 @@ class UserProfile(models.Model):
     pollen_sensitivity = models.TextField()  # store sensitivity for different allergens (e.g., pollen, food)
     medication_reminders_enabled = models.BooleanField(default=True)
     symptom_tracking_enabled = models.BooleanField(default=True)
-    # add notification preferences later if needed
 
     def __str__(self):
         return self.user.username
@@ -25,16 +25,24 @@ class PollenData(models.Model):
 
     def __str__(self):
         return f"{self.pollen_type} - {self.location} ({self.date})"
-    
+
+def default_end_date():
+    return timezone.now().date() + timedelta(days=30)
+
 class Medication(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     med_name = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
     dosage = models.CharField(max_length=100)
-    instructions = models.TextField() # notes on when to take it (with food?)
-    reminder_time = models.TimeField()
-    last_taken = models.DateTimeField(null = True, blank = True)
+    frequency = models.IntegerField(default=1)
+    reminder_times = models.JSONField(default=list)
     refill_reminder = models.BooleanField(default=False)
-    
+    refill_date = models.DateField(blank=True, null=True)
+    start_date = models.DateField(default=timezone.now)
+    end_date = models.DateField(default=default_end_date)    
+    reminder_notification_ids = models.JSONField(default=list, blank=True)
+    refill_notification_id = models.CharField(max_length=255, null=True, blank=True)
+
     def __str__(self):
         return f"{self.med_name} for {self.user.username}"
 
@@ -61,5 +69,14 @@ class AllergenSpecies(models.Model):
     
     def __str__(self):
         return f"Top allergen for {self.user.username}: {self.top_allergen}"
+    
+class DeviceToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    token = models.CharField(max_length=200, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.token}"
+    
 
     

@@ -1,26 +1,52 @@
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native'
-import { router, useRouter } from 'expo-router';
+import { View, Text, ActivityIndicator, StyleSheet} from 'react-native';
+import { useRouter } from 'expo-router';
 import ScreenWrap from '../components/ScreenWrap.jsx';
-import React, { useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
+import * as Font from 'expo-font';
 
-export default function index(){
+export default function Index() {
   const router = useRouter();
+  const [fontsLoaded, setFontsLoaded] = useState(false);
 
-  // auto direct to welcome page
   useEffect(() => {
-    const timer = setTimeout(() => {
-      router.push('/Entrypage');
-    }, 2000); // add a 2-second delay to showcase loading effect
+    const loadResourcesAndNavigate = async () => {
+      try {
+        // Load fonts
+        await Font.loadAsync({
+          'Cursive': require('../assets/fonts/DancingScript-Regular.ttf'),
+        });
+        setFontsLoaded(true);
+
+        setTimeout(() => {
+          router.push('/Entrypage');
+        }, 2000);
+      } catch (error) {
+        console.error('Error loading resources', error);
+      }
+    };
+
+    loadResourcesAndNavigate();
   }, [router]);
 
-  // eventually replace default acitivity indicator with a more aesthetic one
+
+  // Display loading text or activity indicator while fonts are loading
+  if (!fontsLoaded) {
+    return (
+      <ScreenWrap>
+        <View style={styles.container}>
+          <Text>Loading...</Text>
+        </View>
+      </ScreenWrap>
+    );
+  }
+
   return (
     <ScreenWrap>
-        <View style = {styles.container}>
-            <ActivityIndicator size="large" color="#00ff00" />
-        </View>
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#00ff00" />
+      </View>
     </ScreenWrap>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -28,5 +54,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  }
-})
+  },
+});
