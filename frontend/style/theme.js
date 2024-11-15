@@ -2,9 +2,15 @@ export const theme = {
     colors: {
         primary: '#00C26F',
         primaryDark: '#00AC62',
+        primaryLight: '#00D47A',
         dark: '#3E3E3E',
         darkLight: '#E1E1E1',
+        background: '#FFFFFF',
+        backgroundLight: '#f1f1f1',
+
         gray: '#e3e3e3',
+        white: '#FFFFFF',
+        black: '#000000',
 
         text: '#494949',
         textLight: '#7C7C7C',
@@ -12,6 +18,17 @@ export const theme = {
 
         rose: '#ef4444',
         roseLight: '#f87171',
+
+        severityLow:'#4CAF50',
+        severityMedium:'#F44336',
+        severityHigh:'#FFA726',
+
+        gradients: {
+            green: ["#427171", "#48BF84", "#61D095", "#7BE495"],
+            blue: ["#164863", "#427D9D", "#9BBEC8", "#DDF2FD"],
+            yellow: ["#ed9e77", "#FFC47E", "#FFE382", "#FFF78A"],
+            red: ["#C63D2F", "#E25E3E", "#FF9B50", "#FFBB5C"],
+        }
     },
 
     fonts:{

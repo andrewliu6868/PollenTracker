@@ -44,7 +44,7 @@ export default function Login() {
     
             // Direct to home page on successful login
             setLoading(false);
-            router.push('/Home');
+            router.push('/Insights');
         } catch (error) {
             setLoading(false);
             console.error('Error logging in:', error);

@@ -46,17 +46,18 @@ class Medication(models.Model):
     def __str__(self):
         return f"{self.med_name} for {self.user.username}"
 
-
+def default_top_allergens():
+    return [{"count": 1, "name": "Others"}]
 class SymptomTracking(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    pollen_data = models.ForeignKey(PollenData, on_delete=models.CASCADE)
-    symptom_type = models.CharField(max_length=100) # basic description like sneezing, irritation
-    severity = models.IntegerField() # rate on a number 1-10, or even 1-20
-    notes = models.TextField(blank=True, null=True) # can be null
-    date = models.DateField()
-    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Link entry to a user
+    symptoms = models.JSONField()  # Store symptoms checklist as a JSON object
+    topAllergens = models.JSONField(default=default_top_allergens) # Store top allergens as a JSON object
+    severity = models.IntegerField()  # Store severity level from the slider
+    notes = models.TextField(blank=True, null=True)  # Additional notes
+    date_created = models.DateTimeField(auto_now_add=True)  # Date of entry
+
     def __str__(self):
-        return f"{self.user.username} - {self.symptom_type} ({self.date})"
+        return f"Journal Entry for {self.user.username} on {self.date_created}"
     
 # for the feature that identifies the allergens most likely to affect the user based ontehir symptom logs and pollen data
 class AllergenSpecies(models.Model):

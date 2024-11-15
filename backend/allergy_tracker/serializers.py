@@ -11,6 +11,8 @@ class DeviceTokenSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     
+from django.utils.timezone import localtime
+
 class AllergenSpeciesSerializer(serializers.ModelSerializer):
     class Meta:
         model = AllergenSpecies
@@ -103,9 +105,15 @@ class MedicationSerializer(serializers.ModelSerializer):
 
 
 class SymptomTrackingSerializer(serializers.ModelSerializer):
+    date_created = serializers.SerializerMethodField()
     class Meta:
         model = SymptomTracking
-        fields = '__all__'
+        fields = ['id', 'user', 'symptoms', 'topAllergens', 'severity', 'notes', 'date_created']
+        read_only_fields = ['user', 'date_created']
+
+    def get_date_created(self, obj):
+        # Convert to local time and format
+        return localtime(obj.date_created).strftime('%b %d, %Y, %I:%M %p')
         
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:

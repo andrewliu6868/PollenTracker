@@ -9,7 +9,7 @@ const BASE_URL = SERVER_IP;  // Use your computer's IP address
 
 // Axios instance for API calls
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: SERVER_URL,
   timeout: 10000,  // Timeout after 10 seconds
 });
 
@@ -138,6 +138,16 @@ export const postMedication = async (medication) => {
   }
 };
 
+
+
+const getAuthToken = async () => {
+  try {
+    const token = await AsyncStorage.getItem('accessToken');
+    return token;
+  } catch (error) {
+    console.error('Failed to retrieve token:', error);
+  }
+};
 
 // Function to log in user
 export const loginUser = async (username, password) => {
@@ -311,3 +321,75 @@ export const cancelNotifications = async (notificationIds) => {
   }
 };
 
+
+
+export const saveJournalEntry = async (data) => {
+  const token = await getAuthToken();
+  if (!token) {
+    console.error('No token found');
+    return;
+  }
+
+  try {
+    const response = await api.post('allergy_tracker/journal/create/', data, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    console.log('Entry saved:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error saving journal entry:', error.response.data);
+  }
+};
+
+export const getJournalEntries = async () => {
+  const token = await getAuthToken();
+  if (!token) {
+    console.error('No token found');
+    return;
+  }
+
+  try {
+    const response = await api.get('/allergy_tracker/journal/', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error getting journal entries:', error.response.data);
+    throw error;
+  }
+};
+
+export const getWeeklyJournalEntries = async () => {
+  const token = await getAuthToken();
+  if (!token) {
+    console.error('No token found');
+    return;
+  }
+
+  try {
+    const response = await api.get('/allergy_tracker/journal/weekly/', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error getting weekly journal entries:', error.response.data);
+    throw error;
+  }
+}
+
+
+export const getLatestPollenData = async (latitude, longitude) => {
+
+  try {
+    const response = await api.get(`https://api.ambeedata.com/latest/pollen/by-lat-lng?lat=${latitude}&lng=${longitude}`, {
+      headers: {
+        'x-api-key': AMBEE_API_KEY,
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error: Unable to fetch pollen data from the location', error);
+    throw error;
+  }
+};
