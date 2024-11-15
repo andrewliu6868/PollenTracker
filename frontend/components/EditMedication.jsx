@@ -1,11 +1,11 @@
-import { View, Text, TextInput, Button, ScrollView, StyleSheet, Modal, Switch } from 'react-native';
+import { View, Text, TextInput, Button, ScrollView, StyleSheet, Modal, Switch, Alert } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
-import axios from 'axios';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { updateMedication, deleteMedication } from '../app/api.js';
 
-export default function EditMedication({ isVisible, onClose, onSaveEdit, medication }) {
+export default function EditMedication({ isVisible, onClose, medication, onSaveEdit }) {
   const [medName, setMedName] = useState('');
   const [medDesc, setMedDesc] = useState('');
   const [dosage, setDosage] = useState('');
@@ -19,79 +19,98 @@ export default function EditMedication({ isVisible, onClose, onSaveEdit, medicat
   const [selectedPickerIndex, setSelectedPickerIndex] = useState(null);
 
   const insets = useSafeAreaInsets();
-    // load in existing medication for the current medication
-    useEffect(() => {
-        if (medication) {
-            setMedName(medication.name || '');
-            setMedDesc(medication.description || '');
-            setDosage(medication.dosage || '');
-            setFrequency(medication.frequency || 1);
-            setReminderTimes(medication.reminderTimes || []);
-            setRepeatCount(medication.repeatCount || 1);
-            setStartDate(medication.startDate ? new Date(medication.startDate) : new Date());
-            setEndDate(medication.endDate ? new Date(medication.endDate) : new Date());
-            setRefillDate(medication.refillDate ? new Date(medication.refillDate) : new Date());
-            setRefillReminder(!!medication.refillReminder);
-        }
-    }, [medication]);
 
-    const onSave = () => {
-        if (!medName || !medDesc || dosage === '') {
-            alert('Error: Please enter all medication details!');
-            return;
-        }
-    
-        onSaveEdit({
-            id: medication.id,
-            name: medName,
-            description: medDesc,
-            dosage,
-            frequency,
-            reminderTimes,
-            repeatCount,
-            startDate: startDate.toDateString(),
-            endDate: endDate.toDateString(),
-            refillDate: refillReminder ? refillDate.toDateString() : null,
-            refillReminder,
-        });
-    
-        onClose();
+  // fetch the existing medication from the backend
+  useEffect(() => {
+    if (medication) {
+      setMedName(medication.name || '');
+      setMedDesc(medication.description || '');
+      setDosage(medication.dosage || '');
+      setFrequency(medication.frequency || 1);
+      setReminderTimes(medication.reminderTimes || []);
+      setRepeatCount(medication.repeatCount || 1);
+      setStartDate(medication.startDate ? new Date(medication.startDate) : new Date());
+      setEndDate(medication.endDate ? new Date(medication.endDate) : new Date());
+      setRefillDate(medication.refillDate ? new Date(medication.refillDate) : new Date());
+      setRefillReminder(!!medication.refillReminder);
+    }
+  }, [medication]);
+
+  // update the medication for the backend
+  const handleSave = async () => {
+    if (!medName || !medDesc || dosage === '') {
+      Alert.alert('Error', 'Please enter all medication details!');
+      return;
+    }
+
+    const updatedMedication = {
+      id: medication.id,
+      name: medName,
+      description: medDesc,
+      dosage,
+      frequency,
+      reminderTimes,
+      repeatCount,
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0],
+      refillDate: refillReminder ? refillDate.toISOString().split('T')[0] : null,
+      refillReminder,
     };
 
-  // set frequency state
-  const handleFreqChange = (freq) => {
-    setFrequency(freq);
-    setReminderTimes(new Array(freq).fill(new Date()));
+    // update the backend
+    const success = await updateMedication(medication.id, updatedMedication);
+    if (success) {
+      onSaveEdit(updatedMedication);
+      onClose();
+    } else {
+      Alert.alert('Error', 'Failed to update medication');
+    }
   };
 
-  // set newReminderTimes
-  const handleReminderTimeChange = (index, event, newTime) => {
-    const updated = [...reminderTimes]
-    updated[index] = newTime || updated[index]
-    setReminderTimes(updated);
-  }
+  // event handler for frequency changes
+  const handleFreqChange = (freq) => {
+    setFrequency(freq);
+    if (reminderTimes.length < freq) {
+      setReminderTimes((prevTimes) => [
+        ...prevTimes,
+        ...new Array(freq - prevTimes.length).fill(new Date()),
+      ]);
+    } else {
+      setReminderTimes(reminderTimes.slice(0, freq));
+    }
+    if (selectedPickerIndex >= freq) {
+      setSelectedPickerIndex(null);
+    }
+  };
 
+  // event handler for reminder times changes
+  const handleReminderTimeChange = (index, event, selectedTime) => {
+    if (selectedTime) {
+      setReminderTimes((prevTimes) => {
+        const updatedTimes = [...prevTimes];
+        updatedTimes[index] = selectedTime;
+        return updatedTimes;
+      });
+    }
+  };
 
   return (
     <Modal visible={isVisible} transparent={true} animationType="slide" onRequestClose={onClose}>
       <SafeAreaView style={{ paddingTop: insets.top, flex: 1 }}>
         <ScrollView contentContainerStyle={styles.container}>
           <Text style={styles.title}>Edit Medication</Text>
-
-            <TextInput
-                style={styles.input}
-                placeholder="Medication Name"
-                value={medName}
-                onChangeText={setMedName}
-            />
-            
-            <TextInput
-                style={styles.input}
-                placeholder="Medication Description"
-                value={medDesc}
-                onChangeText={setMedDesc}
-            />
-
+          <TextInput
+            style={styles.input}
+            placeholder="Medication Name"
+            value={medName}
+            onChangeText={setMedName}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Medication Description"
+            value={medDesc}
+            onChangeText={setMedDesc}
+          />
           <Text style={styles.headerText}>Dosage</Text>
           <TextInput
             style={styles.input}
@@ -101,10 +120,10 @@ export default function EditMedication({ isVisible, onClose, onSaveEdit, medicat
           />
 
           <Text style={styles.headerText}>Frequency per Day</Text>
-            <Picker selectedValue={frequency} onValueChange={handleFreqChange} style={styles.picker}>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
-                <Picker.Item key={value} label={`${value} times per day`} value={value} />
-              ))}
+          <Picker selectedValue={frequency} onValueChange={handleFreqChange} style={styles.picker}>
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
+              <Picker.Item key={value} label={`${value} times per day`} value={value} />
+            ))}
           </Picker>
 
           {reminderTimes.map((time, index) => (
@@ -112,7 +131,7 @@ export default function EditMedication({ isVisible, onClose, onSaveEdit, medicat
               <Button title={`Pick Time ${index + 1}`} onPress={() => setSelectedPickerIndex(index)} />
               {selectedPickerIndex === index && (
                 <DateTimePicker
-                  value={time}
+                  value={time instanceof Date ? time : new Date()}
                   mode="time"
                   display="default"
                   onChange={(event, selectedTime) => handleReminderTimeChange(index, event, selectedTime)}
@@ -121,30 +140,7 @@ export default function EditMedication({ isVisible, onClose, onSaveEdit, medicat
             </View>
           ))}
 
-          <Text style={styles.headerText}>Repeat Count</Text>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            placeholder="Repeat Count"
-            value={String(repeatCount)}
-            onChangeText={(text) => setRepeatCount(Number(text))}
-          />
-
-          <Text style={styles.headerText}>Start Date</Text>
-          <DateTimePicker value={startDate} mode="date" onChange={(e, date) => setStartDate(date)} />
-
-          <Text style={styles.headerText}>End Date</Text>
-          <DateTimePicker value={endDate} mode="date" onChange={(e, date) => setEndDate(date)} />
-
-          <View style={styles.switchContainer}>
-            <Text>Refill Reminder</Text>
-            <Switch value={refillReminder} onValueChange={setRefillReminder} />
-          </View>
-          {refillReminder && (
-            <DateTimePicker value={refillDate} mode="date" onChange={(e, date) => setRefillDate(date)} />
-          )}
-
-          <Button title="Save Changes" onPress={onSave} />
+          <Button title="Save Changes" onPress={handleSave} />
           <Button title="Close" onPress={onClose} />
         </ScrollView>
       </SafeAreaView>
@@ -162,21 +158,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
   },
-  headerText: {
-    marginVertical: 10,
-    fontWeight: 'bold',
-  },
   input: {
     height: 40,
     borderColor: 'gray',
     borderWidth: 1,
     marginBottom: 20,
     paddingHorizontal: 10,
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
   },
 });

@@ -6,7 +6,9 @@ import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import AddMedication from './AddMedication.jsx';
 import EditMedication from '../components/EditMedication.jsx';
-import {v4 as uuidv4} from 'uuid';
+import uuid from 'react-native-uuid';
+import { getMedications, postMedication, updateMedication, deleteMedication } from './api.js';
+
 
 export default function Medication() {
     const router = useRouter();
@@ -19,63 +21,53 @@ export default function Medication() {
         setCurrMed({ ...med }); 
         setIsEditModalVisible(true);
     };
-
-    const saveEditedMedication = (updatedMed) => {
-        const updatedMeds = meds.map((med) => (med.id === updatedMed.id ? updatedMed : med));
-        setMeds(updatedMeds);
-        saveMedsToStorage(updatedMeds);
+    
+    const loadMedsFromBackend = async () => {
+        const medsFromBackend = await getMedications();
+        if (medsFromBackend && Array.isArray(medsFromBackend)) {
+            setMeds(medsFromBackend);
+        }
     };
+    
 
-    const addNewMedication = (med) => {
+    const addNewMedication = async (med) => {
         if (!med.name || !med.description || !med.dosage || !med.frequency || !med.refillDate) {
             Alert.alert('Error', 'Please enter all required fields');
             return;
         }
         
         const newMed = {
-            id: uuidv4(),
             name: med.name,
             description: med.description,
             dosage: med.dosage,
             frequency: med.frequency,
             reminderTimes: med.reminderTimes || [],
             repeatCount: med.repeatCount || 1,
-            startDate: med.startDate || new Date(),
-            endDate: med.endDate || new Date(),
-            refillDate: med.refillDate || new Date(),
+            startDate: med.startDate || new Date().toISOString().split('T')[0],
+            endDate: med.endDate || new Date().toISOString().split('T')[0],
+            refillDate: med.refillDate || new Date().toISOString().split('T')[0],
             refillReminder: med.refillReminder || false,
         };
-        
-        const updatedMeds = [...meds, newMed];
-        setMeds(updatedMeds);
-        saveMedsToStorage(updatedMeds);
+    
+        const addedMed = await postMedication(newMed);
+        if (addedMed) {
+            setMeds([...meds, addedMed]);
+        }
     };
     
 
-    const saveMedsToStorage = async (medications) => {
-        try {
-            await AsyncStorage.setItem('medications', JSON.stringify(medications));
-        } catch (error) {
-            console.error('Error saving medications', error);
+    const saveEditedMedication = async (updatedMed) => {
+        const updated = await updateMedication(updatedMed.id, updatedMed);
+        if (updated) {
+          const updatedMeds = meds.map((med) => (med.id === updatedMed.id ? updatedMed : med));
+          setMeds(updatedMeds);
         }
-    };
-
-    const loadMedsFromStorage = async () => {
-        try {
-            const medsString = await AsyncStorage.getItem('medications');
-            if (medsString) setMeds(JSON.parse(medsString));
-        } catch (error) {
-            console.error('Error loading medications', error);
-        }
-    };
-
-    useEffect(() => {
-        loadMedsFromStorage();
-    }, []);
-
-    useEffect(() => {
-        saveMedsToStorage(meds);
-    }, [meds]);
+      };
+    
+      useEffect(() => {
+        loadMedsFromBackend();
+      }, []);
+      
 
 
     const renderMedicationItem = ({ item }) => (

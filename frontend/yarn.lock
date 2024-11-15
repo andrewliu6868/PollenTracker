@@ -6407,6 +6407,11 @@ react-native-svg@^15.7.1:
     css-tree "^1.1.3"
     warn-once "0.1.1"
 
+react-native-uuid@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.npmjs.org/react-native-uuid/-/react-native-uuid-2.0.3.tgz"
+  integrity sha512-f/YfIS2f5UB+gut7t/9BKGSCYbRA9/74A5R1MDp+FLYsuS+OSWoiM/D8Jko6OJB6Jcu3v6ONuddvZKHdIGpeiw==
+
 react-native-vector-icons@*, react-native-vector-icons@^10.2.0:
   version "10.2.0"
   resolved "https://registry.npmjs.org/react-native-vector-icons/-/react-native-vector-icons-10.2.0.tgz"

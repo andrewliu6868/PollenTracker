@@ -24,15 +24,23 @@ class PollenData(models.Model):
 
     def __str__(self):
         return f"{self.pollen_type} - {self.location} ({self.date})"
+
     
 class Medication(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     med_name = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
     dosage = models.CharField(max_length=100)
-    instructions = models.TextField() # notes on when to take it (with food?)
-    reminder_time = models.TimeField()
-    last_taken = models.DateTimeField(null = True, blank = True)
+    frequency = models.IntegerField(default=1)
+    reminder_times = models.JSONField(default=list)
+    repeat_count = models.IntegerField(default=1)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
     refill_reminder = models.BooleanField(default=False)
+    refill_date = models.DateField(blank=True, null=True)
+    instructions = models.TextField(blank=True, null=True)
+    last_taken = models.DateTimeField(null=True, blank=True)
+
     
     def __str__(self):
         return f"{self.med_name} for {self.user.username}"

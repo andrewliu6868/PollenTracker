@@ -4,6 +4,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { postMedication } from './ap.js';
 
 export default function AddMedication({ isVisible, onClose, onAddMed }) {
   const [medName, setMedName] = useState('');
@@ -15,25 +16,43 @@ export default function AddMedication({ isVisible, onClose, onAddMed }) {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [refillDate, setRefillDate] = useState(new Date());
+  const [search, setSearch] = useState([])
   const [useSearch, setUseSearch] = useState(true);
   const [refillReminder, setRefillReminder] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
   const [selectedPickerIndex, setSelectedPickerIndex] = useState(null);
+  const [drop, setDrop] = useState(false)
 
   const insets = useSafeAreaInsets();
 
   // set frequency state
   const handleFreqChange = (freq) => {
     setFrequency(freq);
-    setReminderTimes(new Array(freq).fill(new Date()));
+
+    if (reminderTimes.length < freq) {
+      setReminderTimes((prevTimes) => [
+        ...prevTimes,
+        ...new Array(freq - prevTimes.length).fill(new Date()),
+      ]);
+    } else {
+      setReminderTimes(reminderTimes.slice(0, freq));
+    }
+
+    if (selectedPickerIndex >= freq) {
+      setSelectedPickerIndex(null);
+    }
   };
 
   // set newReminderTimes
-  const handleReminderTimeChange = (index, event, newTime) => {
-    const updated = [...reminderTimes]
-    updatedTimes[index] = newTime || updated[index]
-    setReminderTimes(updated);
-  }
+  const handleReminderTimeChange = (index, event, selectedTime) => {
+    if (selectedTime) {
+      setReminderTimes((prevTimes) => {
+        const updatedTimes = [...prevTimes];
+        updatedTimes[index] = selectedTime;
+        return updatedTimes;
+      });
+    }
+  };
 
   // fetch medication data from the FDA database
   const fetchMedications = async (query) => {
@@ -58,7 +77,6 @@ export default function AddMedication({ isVisible, onClose, onAddMed }) {
       return;
     }
   
-    // Call the onAddMed function passed as a prop
     onAddMed({
       name: medName,
       description: medDesc,
@@ -68,7 +86,6 @@ export default function AddMedication({ isVisible, onClose, onAddMed }) {
       refillDate: refillReminder ? refillDate.toDateString() : null,
     });
   
-    // Clear inputs and close modal
     setMedName('');
     setMedDesc('');
     setDosage('');
@@ -85,6 +102,8 @@ export default function AddMedication({ isVisible, onClose, onAddMed }) {
       <SafeAreaView style={{ paddingTop: insets.top, flex: 1 }}>
         <ScrollView contentContainerStyle={styles.container}>
           <Text style={styles.title}>Add Medication</Text>
+          <Text style={styles.headerText}>Medication Details</Text>
+
           <View style={styles.switchContainer}>
             <Text>Search in OpenFDA</Text>
             <Switch value={useSearch} onValueChange={(value) => setUseSearch(value)} />
@@ -132,7 +151,7 @@ export default function AddMedication({ isVisible, onClose, onAddMed }) {
               <Button title={`Pick Time ${index + 1}`} onPress={() => setSelectedPickerIndex(index)} />
               {selectedPickerIndex === index && (
                 <DateTimePicker
-                  value={time}
+                  value={time instanceof Date ? time : new Date()}
                   mode="time"
                   display="default"
                   onChange={(event, selectedTime) => handleReminderTimeChange(index, event, selectedTime)}
