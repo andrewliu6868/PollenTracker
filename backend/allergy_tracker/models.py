@@ -10,7 +10,6 @@ class UserProfile(models.Model):
     pollen_sensitivity = models.TextField()  # store sensitivity for different allergens (e.g., pollen, food)
     medication_reminders_enabled = models.BooleanField(default=True)
     symptom_tracking_enabled = models.BooleanField(default=True)
-    # add notification preferences later if needed
 
     def __str__(self):
         return self.user.username

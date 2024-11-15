@@ -15,6 +15,7 @@ class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
+    
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -25,12 +26,13 @@ def get_medications(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def add_medication(request):
-    serializer = MedicationSerializer(data=request.data)
+def add_medication(self, request):
+    serializer = MedicationSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
-        serializer.save(user=request.user)
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])

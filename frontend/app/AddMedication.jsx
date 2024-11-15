@@ -4,7 +4,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { postMedication } from './ap.js';
+import { postMedication } from './api.js';
 
 export default function AddMedication({ isVisible, onClose, onAddMed }) {
   const [medName, setMedName] = useState('');
@@ -71,29 +71,44 @@ export default function AddMedication({ isVisible, onClose, onAddMed }) {
     }
   };
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (!medName || !medDesc || dosage === '') {
       alert('Error: Please enter all medication details!');
       return;
     }
   
-    onAddMed({
-      name: medName,
+    const newMedication = {
+      med_name: medName,
       description: medDesc,
       dosage,
       frequency,
-      reminderTimes,
-      refillDate: refillReminder ? refillDate.toDateString() : null,
-    });
-  
-    setMedName('');
-    setMedDesc('');
-    setDosage('');
-    setFrequency(1);
-    setReminderTimes([]);
-    setRefillDate(new Date());
-    setRefillReminder(false);
-    onClose();
+      reminder_times: reminderTimes,
+      repeat_count: repeatCount,
+      start_date: startDate.toISOString().split('T')[0],
+      end_date: endDate.toISOString().split('T')[0],
+      refill_reminder: refillReminder,
+      refill_date: refillReminder ? refillDate.toISOString().split('T')[0] : null,
+    };
+
+    try {
+      const addedMedication = await postMedication(newMedication);
+      if (addedMedication) {
+        onAddMed(addedMedication);
+      }
+      setMedName('');
+      setMedDesc('');
+      setDosage('');
+      setFrequency(1);
+      setReminderTimes([]);
+      setRefillDate(new Date());
+      setRefillReminder(false);
+      setStartDate(new Date());
+      setEndDate(new Date());
+      onClose();
+    } catch (error) {
+      console.error('Error adding medication:', error);
+      alert('Failed to add medication');
+    }
   };
   
 

@@ -45,16 +45,16 @@ export default function EditMedication({ isVisible, onClose, medication, onSaveE
 
     const updatedMedication = {
       id: medication.id,
-      name: medName,
+      med_name: medName,
       description: medDesc,
       dosage,
       frequency,
-      reminderTimes,
+      reminder_times: reminderTimes,
       repeatCount,
       startDate: startDate.toISOString().split('T')[0],
       endDate: endDate.toISOString().split('T')[0],
-      refillDate: refillReminder ? refillDate.toISOString().split('T')[0] : null,
-      refillReminder,
+      refill_reminder: refillReminder,
+      refill_date: refillReminder ? refillDate.toISOString().split('T')[0] : null,
     };
 
     // update the backend

@@ -25,14 +25,13 @@ export default function Home() {
                 <SafeAreaView style={{ flex: 1, paddingTop: insets.top }}>
 
                     <ScrollView contentContainerStyle={styles.scrollContentContainer}>
-                        {/* HeatMap Section */}
+                        <View style={styles.forecastWrapper}>
+                                <Forecast place={'california'} />
+                        </View>
                         <View style={styles.mapContainer}>
                             <HeatMap lat={45} long={-72} />
                         </View>
 
-                        <View style={styles.forecastWrapper}>
-                            <Forecast place={'california'} />
-                        </View>
                     </ScrollView>
                 </SafeAreaView>
             </LinearGradient>

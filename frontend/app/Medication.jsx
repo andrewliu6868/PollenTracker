@@ -2,16 +2,13 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView } from '
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ScreenWrap from '../components/ScreenWrap';
 import TopBar from '../components/TopBar';
-import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import AddMedication from './AddMedication.jsx';
 import EditMedication from '../components/EditMedication.jsx';
-import uuid from 'react-native-uuid';
 import { getMedications, postMedication, updateMedication, deleteMedication } from './api.js';
 
 
 export default function Medication() {
-    const router = useRouter();
     const [meds, setMeds] = useState([]);
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -21,55 +18,26 @@ export default function Medication() {
         setCurrMed({ ...med }); 
         setIsEditModalVisible(true);
     };
-    
+
     const loadMedsFromBackend = async () => {
         const medsFromBackend = await getMedications();
         if (medsFromBackend && Array.isArray(medsFromBackend)) {
             setMeds(medsFromBackend);
         }
     };
-    
 
-    const addNewMedication = async (med) => {
-        if (!med.name || !med.description || !med.dosage || !med.frequency || !med.refillDate) {
-            Alert.alert('Error', 'Please enter all required fields');
-            return;
-        }
-        
-        const newMed = {
-            name: med.name,
-            description: med.description,
-            dosage: med.dosage,
-            frequency: med.frequency,
-            reminderTimes: med.reminderTimes || [],
-            repeatCount: med.repeatCount || 1,
-            startDate: med.startDate || new Date().toISOString().split('T')[0],
-            endDate: med.endDate || new Date().toISOString().split('T')[0],
-            refillDate: med.refillDate || new Date().toISOString().split('T')[0],
-            refillReminder: med.refillReminder || false,
-        };
-    
-        const addedMed = await postMedication(newMed);
-        if (addedMed) {
-            setMeds([...meds, addedMed]);
-        }
-    };
-    
 
     const saveEditedMedication = async (updatedMed) => {
         const updated = await updateMedication(updatedMed.id, updatedMed);
         if (updated) {
-          const updatedMeds = meds.map((med) => (med.id === updatedMed.id ? updatedMed : med));
-          setMeds(updatedMeds);
+            loadMedsFromBackend();
         }
-      };
+    };
     
-      useEffect(() => {
+    useEffect(() => {
         loadMedsFromBackend();
-      }, []);
+    }, []);
       
-
-
     const renderMedicationItem = ({ item }) => (
         <TouchableOpacity onPress={() => editSomeMedication(item)}>
             <View style={styles.row}>
@@ -111,8 +79,10 @@ export default function Medication() {
                 </TouchableOpacity>
                 <AddMedication
                     isVisible={isAddModalVisible}
-                    onClose={() => setIsAddModalVisible(false)}
-                    onAddMed={addNewMedication}
+                    onClose={() => {
+                        setIsAddModalVisible(false);
+                        loadMedsFromBackend();
+                    }}
                 />
                 <EditMedication
                     isVisible={isEditModalVisible}

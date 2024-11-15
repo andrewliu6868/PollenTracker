@@ -19,7 +19,7 @@ export const getMedications = async () => {
     return [];
   }
   try {
-    const response = await api.get('/medications/', {
+    const response = await api.get(`${BASE_URL}/allergy_tracker/medications/`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
@@ -32,14 +32,23 @@ export const getMedications = async () => {
 // function to add new medication to user
 export const postMedication = async (medication) => {
   const token = await AsyncStorage.getItem('token');
+  if (!token) {
+    console.error('No authentication token found');
+    return;
+  }
+
   try {
-    const response = await api.post('/medications/add/', medication, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await axios.post(
+      `${SERVER_IP}/allergy_tracker/medications/add/`,
+      medication,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
     return response.data;
   } catch (error) {
-    console.error('Error adding medication:', error);
-    return null;
+    console.error('Error adding medication:', error.response?.data || error.message);
+    throw error;
   }
 };
 
