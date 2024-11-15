@@ -1,4 +1,4 @@
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet} from 'react-native';
 import { useRouter } from 'expo-router';
 import ScreenWrap from '../components/ScreenWrap.jsx';
 import React, { useState, useEffect } from 'react';
@@ -27,6 +27,7 @@ export default function Index() {
 
     loadResourcesAndNavigate();
   }, [router]);
+
 
   // Display loading text or activity indicator while fonts are loading
   if (!fontsLoaded) {

@@ -4,8 +4,8 @@ import ScreenWrap from '../components/ScreenWrap';
 import TopBar from '../components/TopBar';
 import React, { useState, useEffect } from 'react';
 import AddMedication from './AddMedication.jsx';
-import EditMedication from '../components/EditMedication.jsx';
-import { getMedications, postMedication, updateMedication, deleteMedication } from './api.js';
+import EditMedication from './EditMedication.jsx';
+import { getMedications } from './api.js';
 
 
 export default function Medication() {
@@ -14,34 +14,48 @@ export default function Medication() {
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [currMed, setCurrMed] = useState();
 
-    const editSomeMedication = (med) => {
-        setCurrMed({ ...med }); 
-        setIsEditModalVisible(true);
-    };
-
+    // load in the medication from the user
     const loadMedsFromBackend = async () => {
         const medsFromBackend = await getMedications();
         if (medsFromBackend && Array.isArray(medsFromBackend)) {
-            setMeds(medsFromBackend);
+            console.log('Fetched medications:', medsFromBackend); // checking for id
+            setMeds(medsFromBackend.map((med) => ({
+                id: med.id,  // Ensure `id` is present
+                ...med,
+              })));
         }
     };
 
-
-    const saveEditedMedication = async (updatedMed) => {
-        const updated = await updateMedication(updatedMed.id, updatedMed);
-        if (updated) {
-            loadMedsFromBackend();
-        }
-    };
-    
     useEffect(() => {
         loadMedsFromBackend();
     }, []);
       
+    // set which medication should be editted
+    const editSomeMedication = (med) => {
+        if (!med.id) {
+          console.error('Medication ID is missing:', med);
+        }
+        setCurrMed({ id: med.id, ...med });
+        setIsEditModalVisible(true);
+      };
+      
+
+    // update the state of the users medications after an async update is called
+    const saveEditedMedication = (updatedMed) => {
+        setMeds((prevState) => prevState.map((med) => (med.id === updatedMed.id ? updatedMed : med)));
+        setIsEditModalVisible(false);
+    };
+
+    // update the state of the users medications after an async delete is called
+    const handleDeleteMed = (medId) => {
+        const updatedMeds = meds.filter((med) => med.id !== medId);
+        setMeds(updatedMeds);
+    }
+    
     const renderMedicationItem = ({ item }) => (
         <TouchableOpacity onPress={() => editSomeMedication(item)}>
             <View style={styles.row}>
-                <Text style={styles.cell}>{item.name}</Text>
+                <Text style={styles.cell}>{item.med_name}</Text>
                 <Text style={styles.cell}>{item.description}</Text>
                 <Text style={styles.cell}>{item.dosage}</Text>
                 <Text style={styles.cell}>{item.frequency} times/day</Text>
@@ -66,7 +80,7 @@ export default function Medication() {
                 <TopBar title="Medication" />
                 <FlatList
                     data={meds}
-                    keyExtractor={(item) => item.id.toString()}
+                    keyExtractor={(item, index) => item ? (item.uuid || item.id?.toString() || index.toString()) : index.toString()}
                     renderItem={renderMedicationItem}
                     ListHeaderComponent={renderTableHeader}
                     contentContainerStyle={styles.listContainer}
@@ -88,6 +102,7 @@ export default function Medication() {
                     isVisible={isEditModalVisible}
                     onClose={() => setIsEditModalVisible(false)}
                     onSaveEdit={saveEditedMedication}
+                    onDelete={handleDeleteMed}
                     medication={currMed}
                 />
             </View>

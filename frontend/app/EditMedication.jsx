@@ -1,17 +1,16 @@
-import { View, Text, TextInput, Button, ScrollView, StyleSheet, Modal, Switch, Alert } from 'react-native';
+import { View, Text, TextInput, Button, ScrollView, StyleSheet, Modal, Alert, Switch } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { updateMedication, deleteMedication } from '../app/api.js';
+import { updateMedication, deleteMedication, cancelNotifications, scheduleReminderNotifications, scheduleRefillNotification } from './api.js';
 
-export default function EditMedication({ isVisible, onClose, medication, onSaveEdit }) {
+export default function EditMedication({ isVisible, onClose, medication, onSaveEdit, onDelete }) {
   const [medName, setMedName] = useState('');
   const [medDesc, setMedDesc] = useState('');
   const [dosage, setDosage] = useState('');
   const [frequency, setFrequency] = useState(1);
   const [reminderTimes, setReminderTimes] = useState([]);
-  const [repeatCount, setRepeatCount] = useState(1);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [refillDate, setRefillDate] = useState(new Date());
@@ -23,49 +22,124 @@ export default function EditMedication({ isVisible, onClose, medication, onSaveE
   // fetch the existing medication from the backend
   useEffect(() => {
     if (medication) {
-      setMedName(medication.name || '');
+      setMedName(medication.med_name || '');
       setMedDesc(medication.description || '');
       setDosage(medication.dosage || '');
       setFrequency(medication.frequency || 1);
-      setReminderTimes(medication.reminderTimes || []);
-      setRepeatCount(medication.repeatCount || 1);
-      setStartDate(medication.startDate ? new Date(medication.startDate) : new Date());
-      setEndDate(medication.endDate ? new Date(medication.endDate) : new Date());
-      setRefillDate(medication.refillDate ? new Date(medication.refillDate) : new Date());
-      setRefillReminder(!!medication.refillReminder);
+      setReminderTimes(medication.reminder_times || []);
+      setStartDate(medication.start_date ? new Date(medication.start_date) : new Date());
+      setEndDate(medication.end_date ? new Date(medication.end_date) : new Date());
+      setRefillDate(medication.refill_date ? new Date(medication.refill_date) : new Date());
+      setRefillReminder(!!medication.refill_reminder);
     }
   }, [medication]);
 
-  // update the medication for the backend
+  // handle deleting medication
+  const handleDelete = async () => {
+    if (!medication || !medication.id) {
+      console.error('Invalid medication data');
+      Alert.alert('Error', 'Invalid medication data');
+      return;
+    }
+
+    Alert.alert('Delete Medication', 'Are you sure you want to delete this medication?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            // Cancel all existing notifications before deleting
+            if (medication.reminder_notification_ids) {
+              await cancelNotifications(medication.reminder_notification_ids);
+            }
+            if (medication.refill_notification_id) {
+              await cancelNotifications([medication.refill_notification_id]);
+            }
+
+            const success = await deleteMedication(medication.id);
+            if (success) {
+              onDelete(medication.id);
+              onClose();
+            } else {
+              Alert.alert('Error', 'Could not delete medication');
+            }
+          } catch (error) {
+            console.error('Error deleting medication:', error);
+            Alert.alert('Error', 'Failed to delete medication');
+          }
+        },
+      },
+    ]);
+  };
+
+  
+
   const handleSave = async () => {
     if (!medName || !medDesc || dosage === '') {
       Alert.alert('Error', 'Please enter all medication details!');
       return;
     }
-
+  
+    if (endDate < startDate) {
+      Alert.alert('Error', 'End date cannot be before the start date.');
+      return;
+    }
+  
     const updatedMedication = {
       id: medication.id,
       med_name: medName,
       description: medDesc,
       dosage,
       frequency,
-      reminder_times: reminderTimes,
-      repeatCount,
-      startDate: startDate.toISOString().split('T')[0],
-      endDate: endDate.toISOString().split('T')[0],
+      reminder_times: reminderTimes.map((time) => time.toISOString()),
+      start_date: startDate.toISOString().split('T')[0],
+      end_date: endDate.toISOString().split('T')[0],
       refill_reminder: refillReminder,
       refill_date: refillReminder ? refillDate.toISOString().split('T')[0] : null,
+      reminder_notification_ids: medication.reminder_notification_ids,
+      refill_notification_id: medication.refill_notification_id,
     };
-
-    // update the backend
-    const success = await updateMedication(medication.id, updatedMedication);
-    if (success) {
-      onSaveEdit(updatedMedication);
+  
+    try {
+      // Cancel existing notifications
+      if (updatedMedication.reminder_notification_ids) {
+        await cancelNotifications(updatedMedication.reminder_notification_ids);
+      }
+      if (updatedMedication.refill_notification_id) {
+        await cancelNotifications([updatedMedication.refill_notification_id]);
+      }
+  
+      // Update medication in the backend
+      const savedMedication = await updateMedication(medication.id, updatedMedication);
+  
+      // Schedule new reminder notifications
+      if (reminderTimes.length > 0) {
+        const newReminderNotificationIds = await scheduleReminderNotifications(
+          updatedMedication.reminder_times,
+          updatedMedication,
+          startDate,
+          endDate
+        );
+        savedMedication.reminder_notification_ids = newReminderNotificationIds;
+      }
+  
+      // Schedule a new refill notification if applicable
+      if (refillReminder && refillDate) {
+        const newRefillNotificationId = await scheduleRefillNotification(
+          updatedMedication.refill_date,
+          updatedMedication
+        );
+        savedMedication.refill_notification_id = newRefillNotificationId;
+      }
+  
+      onSaveEdit(savedMedication);
       onClose();
-    } else {
+    } catch (error) {
+      console.error('Error updating medication:', error);
       Alert.alert('Error', 'Failed to update medication');
     }
-  };
+  };  
 
   // event handler for frequency changes
   const handleFreqChange = (freq) => {
@@ -140,7 +214,22 @@ export default function EditMedication({ isVisible, onClose, medication, onSaveE
             </View>
           ))}
 
+          <Text style={styles.headerText}>Start Date</Text>
+          <DateTimePicker value={startDate} mode="date" onChange={(e, date) => setStartDate(date)} />
+
+          <Text style={styles.headerText}>End Date</Text>
+          <DateTimePicker value={endDate} mode="date" onChange={(e, date) => setEndDate(date)} />
+
+          <View style={styles.switchContainer}>
+            <Text>Refill Reminder</Text>
+            <Switch value={refillReminder} onValueChange={setRefillReminder} />
+          </View>
+          {refillReminder && (
+            <DateTimePicker value={refillDate} mode="date" onChange={(e, date) => setRefillDate(date)} />
+          )}
+
           <Button title="Save Changes" onPress={handleSave} />
+          <Button title="Delete Entry" onPress={handleDelete}/>
           <Button title="Close" onPress={onClose} />
         </ScrollView>
       </SafeAreaView>
@@ -154,6 +243,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  redTitle: {
+    color: 'red',
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,

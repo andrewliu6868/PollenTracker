@@ -4,15 +4,14 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { postMedication } from './api.js';
+import { postMedication, scheduleReminderNotifications, scheduleRefillNotification, updateMedication } from './api.js';
 
-export default function AddMedication({ isVisible, onClose, onAddMed }) {
+export default function AddMedication({ isVisible, onClose }) {
   const [medName, setMedName] = useState('');
   const [medDesc, setMedDesc] = useState('');
   const [dosage, setDosage] = useState('');
   const [frequency, setFrequency] = useState(1);
   const [reminderTimes, setReminderTimes] = useState([]);
-  const [repeatCount, setRepeatCount] = useState(1);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [refillDate, setRefillDate] = useState(new Date());
@@ -72,29 +71,70 @@ export default function AddMedication({ isVisible, onClose, onAddMed }) {
   };
 
   const onSubmit = async () => {
-    if (!medName || !medDesc || dosage === '') {
-      alert('Error: Please enter all medication details!');
+    if (!medName || !medDesc || dosage === '' || !startDate || !endDate) {
+      alert('Error: Please fill in all medication details!');
       return;
     }
   
+    if (endDate < startDate) {
+      alert('Error: End date cannot be before the start date.');
+      return;
+    }
+  
+    // Prepare the medication object
     const newMedication = {
       med_name: medName,
       description: medDesc,
       dosage,
-      frequency,
-      reminder_times: reminderTimes,
-      repeat_count: repeatCount,
+      frequency: parseInt(frequency),
+      reminder_times: reminderTimes.map((time) => time.toISOString()),
       start_date: startDate.toISOString().split('T')[0],
       end_date: endDate.toISOString().split('T')[0],
       refill_reminder: refillReminder,
       refill_date: refillReminder ? refillDate.toISOString().split('T')[0] : null,
+      reminder_notification_ids: [],
+      refill_notification_id: null
     };
-
+  
+    console.log('Medication payload:', newMedication);
+  
     try {
+      // Step 1: Post the new medication to the server
       const addedMedication = await postMedication(newMedication);
-      if (addedMedication) {
-        onAddMed(addedMedication);
+  
+      // Step 2: Schedule reminders and refill notifications
+      let reminderNotificationIds = [];
+      let refillNotificationId = null;
+  
+      if (reminderTimes.length > 0) {
+        reminderNotificationIds = await scheduleReminderNotifications(
+          newMedication.reminder_times,
+          addedMedication,
+          startDate,
+          endDate
+        );
       }
+  
+      if (refillReminder && refillDate) {
+        refillNotificationId = await scheduleRefillNotification(
+          newMedication.refill_date,
+          addedMedication
+        );
+      }
+  
+      // Step 3: Update the medication with notification IDs
+      const updatedMedication = {
+        ...addedMedication,
+        reminder_notification_ids: reminderNotificationIds,
+        refill_notification_id: refillNotificationId
+      };
+  
+      // Save the updated medication to the server
+      await updateMedication(addedMedication.id, updatedMedication);
+  
+      alert('Medication added and notifications scheduled successfully!');
+  
+      // Reset the form
       setMedName('');
       setMedDesc('');
       setDosage('');
@@ -110,7 +150,6 @@ export default function AddMedication({ isVisible, onClose, onAddMed }) {
       alert('Failed to add medication');
     }
   };
-  
 
   return (
     <Modal visible={isVisible} transparent={true} animationType="slide" onRequestClose={onClose}>
@@ -174,15 +213,6 @@ export default function AddMedication({ isVisible, onClose, onAddMed }) {
               )}
             </View>
           ))}
-
-          <Text style={styles.headerText}>Repeat Count</Text>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            placeholder="Repeat Count"
-            value={String(repeatCount)}
-            onChangeText={(text) => setRepeatCount(Number(text))}
-          />
 
           <Text style={styles.headerText}>Start Date</Text>
           <DateTimePicker value={startDate} mode="date" onChange={(e, date) => setStartDate(date)} />

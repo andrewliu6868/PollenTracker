@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Drawer } from 'react-native-paper';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import Medication from '../app/Medication';
 
 export default function SideDrawer({ visible, onClose }) {
     const router = useRouter();
@@ -27,10 +26,8 @@ export default function SideDrawer({ visible, onClose }) {
             animationType="slide"
             onRequestClose={onClose}
         >
-            {/* Overlay for closing the drawer */}
             <TouchableOpacity style={styles.overlay} onPress={onClose} />
 
-            {/* Drawer content wrapped with SafeAreaView */}
             <SafeAreaView style={[styles.drawer, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
                 <Drawer.Section style={styles.titleText} title="Menu">
                     <Drawer.Item 
