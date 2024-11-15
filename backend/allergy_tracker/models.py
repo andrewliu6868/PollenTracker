@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
+from datetime import timedelta
 
 # Create your models here.
     
@@ -24,7 +26,9 @@ class PollenData(models.Model):
     def __str__(self):
         return f"{self.pollen_type} - {self.location} ({self.date})"
 
-    
+def default_end_date():
+    return timezone.now().date() + timedelta(days=30)
+
 class Medication(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     med_name = models.CharField(max_length=200)
@@ -32,17 +36,16 @@ class Medication(models.Model):
     dosage = models.CharField(max_length=100)
     frequency = models.IntegerField(default=1)
     reminder_times = models.JSONField(default=list)
-    repeat_count = models.IntegerField(default=1)
-    start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True, blank=True)
     refill_reminder = models.BooleanField(default=False)
     refill_date = models.DateField(blank=True, null=True)
-    instructions = models.TextField(blank=True, null=True)
-    last_taken = models.DateTimeField(null=True, blank=True)
+    start_date = models.DateField(default=timezone.now)
+    end_date = models.DateField(default=default_end_date)    
+    reminder_notification_ids = models.JSONField(default=list, blank=True)
+    refill_notification_id = models.CharField(max_length=255, null=True, blank=True)
 
-    
     def __str__(self):
         return f"{self.med_name} for {self.user.username}"
+
 
 class SymptomTracking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -65,5 +68,14 @@ class AllergenSpecies(models.Model):
     
     def __str__(self):
         return f"Top allergen for {self.user.username}: {self.top_allergen}"
+    
+class DeviceToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    token = models.CharField(max_length=200, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.token}"
+    
 
     
