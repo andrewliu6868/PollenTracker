@@ -60,18 +60,18 @@ export default function Forecast({ place }) {
   }, [place]);
 
   const renderItem = ({ item }) => (
-    <View style={styles.row}>
+    <View style={styles.reminderItem}>
       <Text style={styles.dayText}>{item.dayOfWeek}</Text>
       <View style={styles.iconRow}>
-        <FontAwesome5 name="tree" size={20} color="green" />
+        <FontAwesome5 name="tree" size={20} color="#A5D6A7" />
         <Text style={styles.levelText}>Tree: {item.treeLevel}</Text>
       </View>
       <View style={styles.iconRow}>
-        <FontAwesome5 name="seedling" size={20} color="darkgreen" />
+        <FontAwesome5 name="seedling" size={20} color="#81C784" />
         <Text style={styles.levelText}>Grass: {item.grassLevel}</Text>
       </View>
       <View style={styles.iconRow}>
-        <FontAwesome5 name="spa" size={20} color="orange" />
+        <FontAwesome5 name="spa" size={20} color="#FFB74D" />
         <Text style={styles.levelText}>Weed: {item.weedLevel}</Text>
       </View>
     </View>
@@ -81,14 +81,19 @@ export default function Forecast({ place }) {
     <View style={styles.container}>
       <Text style={styles.forecastTitle}>Pollen Forecast</Text>
       {loading ? (
-        <Text>Loading...</Text>
+        <Text style={styles.loadingText}>Loading...</Text>
       ) : error ? (
-        <Text>Error: {error}</Text>
+        <Text style={styles.errorText}>Error: {error}</Text>
       ) : (
         <FlatList
           data={forecastData}
           renderItem={renderItem}
           keyExtractor={(item, index) => index.toString()}
+          nestedScrollEnabled={true}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          ListEmptyComponent={() => (
+            <Text style={styles.noReminders}>No forecast data available</Text>
+          )}
         />
       )}
     </View>
@@ -97,11 +102,13 @@ export default function Forecast({ place }) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    width: '100%',
+    width: '95%',
+    padding: 15,
     backgroundColor: '#1E1F28',
-    borderRadius: 10,
-    overflow: 'hidden'
+    borderRadius: 15,
+    marginBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   forecastTitle: {
     fontSize: 20,
@@ -109,15 +116,16 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 15,
   },
-  row: {
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
+  reminderItem: {
+    backgroundColor: '#2E7D32',
+    padding: 10,
+    borderRadius: 8,
     marginBottom: 10,
+    width: '100%',
   },
   dayText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: '#fff',
   },
   iconRow: {
@@ -127,7 +135,19 @@ const styles = StyleSheet.create({
   },
   levelText: {
     fontSize: 14,
-    color: '#fff',
+    color: '#A5D6A7',
     marginLeft: 10,
+  },
+  loadingText: {
+    color: '#A5D6A7',
+    marginTop: 10,
+  },
+  errorText: {
+    color: '#FFB74D',
+    marginTop: 10,
+  },
+  noReminders: {
+    color: '#A5D6A7',
+    marginTop: 10,
   },
 });

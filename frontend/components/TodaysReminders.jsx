@@ -22,35 +22,37 @@ export default function TodaysReminders() {
   // Filter medications that have reminders for today
   const todaysReminders = medications.filter((med) => {
     if (!med.reminder_times || med.reminder_times.length === 0) return false;
-
     return med.reminder_times.some((time) => {
       const reminderDate = parseISO(time);
       return isToday(reminderDate);
     });
   });
 
+  const renderReminderItem = ({ item }) => (
+    <View style={styles.reminderItem}>
+      <Text style={styles.reminderTitle}>{item.med_name}</Text>
+      <Text style={styles.reminderBody}>{item.description}</Text>
+      {item.reminder_times.map((time, index) => (
+        <Text key={index} style={styles.reminderTime}>
+          Reminder at: {format(parseISO(time), 'hh:mm a')}
+        </Text>
+      ))}
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Today's Reminders</Text>
-      {todaysReminders.length > 0 ? (
-        <FlatList
-          data={todaysReminders}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.reminderItem}>
-              <Text style={styles.reminderTitle}>{item.med_name}</Text>
-              <Text style={styles.reminderBody}>{item.description}</Text>
-              {item.reminder_times.map((time, index) => (
-                <Text key={index} style={styles.reminderTime}>
-                  Reminder at: {format(parseISO(time), 'hh:mm a')}
-                </Text>
-              ))}
-            </View>
-          )}
-        />
-      ) : (
-        <Text style={styles.noReminders}>No reminders for today</Text>
-      )}
+      <FlatList
+        data={todaysReminders}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderReminderItem}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        nestedScrollEnabled={true}
+        ListEmptyComponent={() => (
+          <Text style={styles.noReminders}>No reminders for today</Text>
+        )}
+      />
     </View>
   );
 }
@@ -95,5 +97,6 @@ const styles = StyleSheet.create({
   noReminders: {
     color: '#A5D6A7',
     marginTop: 10,
+    textAlign: 'center',
   },
 });

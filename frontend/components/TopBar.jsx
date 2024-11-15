@@ -8,14 +8,22 @@ import * as Notifications from 'expo-notifications';
 export default function TopBar({title}){
   const [drawerVis, setDrawerVis] = useState(false);
   const toggleDrawer = () => setDrawerVis(!drawerVis);
+  const [notiReceived, setNotiReceived] = useState(false);
+
   // listen for notifications
     useEffect(() => {
       const notificationListener = Notifications.addNotificationReceivedListener(notification => {
-        Alert.alert(
-          notification.request.content.title,
-          notification.request.content.body,
-          [{ text: 'OK', onPress: () => console.log('Notification received') }]
-        );
+        if (!notiReceived){
+          setNotiReceived(true);
+          Alert.alert(
+            notification.request.content.title,
+            notification.request.content.body,
+            [{ text: 'OK', onPress: () => {
+              console.log('Notification received'); 
+              setNotiReceived(false);
+            }}]
+          );
+        }
       });
   
       const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
@@ -26,7 +34,7 @@ export default function TopBar({title}){
         Notifications.removeNotificationSubscription(notificationListener);
         Notifications.removeNotificationSubscription(responseListener);
       };
-    }, []);
+    }, [notiReceived]);
 
   return (
     <View style={styles.container}>

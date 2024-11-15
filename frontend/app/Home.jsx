@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, SafeAreaView } from 'react-native';
 import ScreenWrap from '../components/ScreenWrap';
 import { StatusBar } from 'expo-status-bar';
 import { heightP, widthP } from '../style/deviceSpecs.js';
@@ -17,6 +17,12 @@ export default function Home() {
     const insets = useSafeAreaInsets();
     const [loading, setLoading] = useState(false);
 
+    const renderComponents = [
+        {key: 'today', render: () => <TodaysReminders/>},
+        {key: 'forecast', render: () => <Forecast place ="Vancouver"/>},
+        {key: 'heatmap', render: () => <HeatMap lat={45} long={-72}/>}
+    ]
+
     return (
         <ScreenWrap>
             <View style={styles.topBarContainer}>
@@ -24,17 +30,12 @@ export default function Home() {
             </View>
             <LinearGradient colors={['#2E7D32', '#A5D6A7']} style={{ flex: 1 }}>
                 <SafeAreaView style={{ flex: 1, paddingTop: insets.top }}>
-
-                    <ScrollView contentContainerStyle={styles.scrollContentContainer}>
-                        <TodaysReminders/>
-                        <View style={styles.forecastWrapper}>
-                                <Forecast place={'california'} />
-                        </View>
-                        <View style={styles.mapContainer}>
-                            <HeatMap lat={45} long={-72} />
-                        </View>
-
-                    </ScrollView>
+                <FlatList
+                    data={renderComponents}
+                    renderItem={({ item }) => item.render()}
+                    keyExtractor={(item) => item.key}
+                    contentContainerStyle={styles.scrollContentContainer}
+                />
                 </SafeAreaView>
             </LinearGradient>
         </ScreenWrap>
@@ -43,49 +44,18 @@ export default function Home() {
 
 const styles = StyleSheet.create({
     topBarContainer: {
-        width: '100%',
-        height: 60, // Ensure consistent height
-        backgroundColor: theme.colors.white,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
+      width: '100%',
+      height: 60,
+      backgroundColor: '#ffffff',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 20,
     },
-
     scrollContentContainer: {
-        alignItems: 'center',
-        paddingVertical: 20,
-        paddingHorizontal: 10,
+      alignItems: 'center',
+      paddingVertical: 20,
     },
+  });
+  
 
 
-    mapContainer: {
-        width: '95%',
-        padding: 15,
-        backgroundColor: '#1E1F28',
-        borderRadius: 15,
-        marginBottom: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 3,
-    },
-    
-    forecastWrapper: {
-        width: '95%',
-        padding: 15,
-        backgroundColor: '#1E1F28',
-        borderRadius: 15,
-        marginBottom: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 3,
-    },
-});
