@@ -9,7 +9,7 @@ const BASE_URL = SERVER_IP;  // Use your computer's IP address
 
 // Axios instance for API calls
 const api = axios.create({
-  baseURL: SERVER_URL,
+  baseURL: SERVER_IP,
   timeout: 10000,  // Timeout after 10 seconds
 });
 
@@ -213,28 +213,39 @@ export const registerDeviceToken = async () => {
       return;
     }
 
-    // Make sure `PROJECT_ID` is defined
+    // Ensure `PROJECT_ID` is defined
     if (!PROJECT_ID) {
       console.error('PROJECT_ID is missing');
       return;
     }
 
-    // Pass the projectId to `getExpoPushTokenAsync`
     const expoPushToken = (await Notifications.getExpoPushTokenAsync({ projectId: PROJECT_ID })).data;
     console.log('Expo Push Token:', expoPushToken);
 
-    // Register the token with the backend
+    // Register or update the token in the backend
     await axios.post(
       `${BASE_URL}/allergy_tracker/register-device-token/`,
       { token: expoPushToken },
       { headers: { Authorization: `Bearer ${token}` } }
-    );
+    ).catch(async (error) => {
+      if (error.response?.status === 500) {
+        console.log('Token already exists, updating...');
+        // Update the existing token instead of inserting a new one
+        await axios.put(
+          `${BASE_URL}/allergy_tracker/register-device-token/`,
+          { token: expoPushToken },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        throw error;
+      }
+    });
+
     console.log('Device token registered successfully');
   } catch (error) {
     console.error('Error registering device token:', error);
   }
 };
-
 
 
 

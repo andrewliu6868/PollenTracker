@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from datetime import timedelta
+from django.db import IntegrityError
 
 
 # Create your views here.
@@ -99,15 +100,22 @@ def delete_medication(request, pk):
     medication.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@api_view(['POST', 'PUT'])
 def register_device_token(request):
+    user = request.user
     token = request.data.get('token')
-    if not token:
-        return Response({"error": "Token is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-    DeviceToken.objects.update_or_create(
-        user=request.user,
-        defaults={"token": token}
-    )
-    return Response({"message": "Device token registered successfully"}, status=status.HTTP_200_OK)
+    if not token:
+        return Response({"error": "No token provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        # Check if the token already exists
+        device_token, created = DeviceToken.objects.update_or_create(
+            user=user,
+            defaults={"token": token}
+        )
+        return Response({"message": "Token registered/updated successfully"}, status=status.HTTP_200_OK)
+    except IntegrityError:
+        return Response({"error": "Token already exists"}, status=status.HTTP_409_CONFLICT)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

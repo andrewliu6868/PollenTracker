@@ -72,7 +72,7 @@ class AllergenSpecies(models.Model):
     
 class DeviceToken(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    token = models.CharField(max_length=200, unique=True)
+    token = models.CharField(max_length=200, unique=False)
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):

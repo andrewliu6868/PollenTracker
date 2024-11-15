@@ -43,3 +43,5 @@ backend/myenv/
 backend/backend/pycache/
 
 backend/allergy_tracker/__pycache__/
+
+backend/allergy_tracker/migration/__pycache__/
