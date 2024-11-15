@@ -139,8 +139,6 @@ export const postMedication = async (medication) => {
 };
 
 
-
-
 // Function to log in user
 export const loginUser = async (username, password) => {
   try {

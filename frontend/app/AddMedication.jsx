@@ -93,22 +93,21 @@ export default function AddMedication({ isVisible, onClose }) {
       refill_reminder: refillReminder,
       refill_date: refillReminder ? refillDate.toISOString().split('T')[0] : null,
       reminder_notification_ids: [],
-      refill_notification_id: null
+      refill_notification_id: null,
     };
   
     console.log('Medication payload:', newMedication);
   
     try {
-      // Step 1: Post the new medication to the server
       const addedMedication = await postMedication(newMedication);
   
-      // Step 2: Schedule reminders and refill notifications
       let reminderNotificationIds = [];
       let refillNotificationId = null;
   
       if (reminderTimes.length > 0) {
+        const reminderDates = reminderTimes.map((time) => new Date(time));
         reminderNotificationIds = await scheduleReminderNotifications(
-          newMedication.reminder_times,
+          reminderDates,
           addedMedication,
           startDate,
           endDate
@@ -117,24 +116,25 @@ export default function AddMedication({ isVisible, onClose }) {
   
       if (refillReminder && refillDate) {
         refillNotificationId = await scheduleRefillNotification(
-          newMedication.refill_date,
+          new Date(newMedication.refill_date),
           addedMedication
         );
       }
   
-      // Step 3: Update the medication with notification IDs
+      console.log('Scheduled Reminder IDs:', reminderNotificationIds);
+      console.log('Scheduled Refill ID:', refillNotificationId);
+  
       const updatedMedication = {
         ...addedMedication,
         reminder_notification_ids: reminderNotificationIds,
-        refill_notification_id: refillNotificationId
+        refill_notification_id: refillNotificationId,
       };
   
-      // Save the updated medication to the server
       await updateMedication(addedMedication.id, updatedMedication);
   
       alert('Medication added and notifications scheduled successfully!');
   
-      // Reset the form
+      // reset the form
       setMedName('');
       setMedDesc('');
       setDosage('');
@@ -150,6 +150,7 @@ export default function AddMedication({ isVisible, onClose }) {
       alert('Failed to add medication');
     }
   };
+  
 
   return (
     <Modal visible={isVisible} transparent={true} animationType="slide" onRequestClose={onClose}>

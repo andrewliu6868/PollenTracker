@@ -26,13 +26,19 @@ export default function EditMedication({ isVisible, onClose, medication, onSaveE
       setMedDesc(medication.description || '');
       setDosage(medication.dosage || '');
       setFrequency(medication.frequency || 1);
-      setReminderTimes(medication.reminder_times || []);
+  
+      const parsedReminderTimes = (medication.reminder_times || []).map(time => 
+        typeof time === 'string' ? new Date(time) : time
+      );
+      setReminderTimes(parsedReminderTimes);
+  
       setStartDate(medication.start_date ? new Date(medication.start_date) : new Date());
       setEndDate(medication.end_date ? new Date(medication.end_date) : new Date());
       setRefillDate(medication.refill_date ? new Date(medication.refill_date) : new Date());
       setRefillReminder(!!medication.refill_reminder);
     }
   }, [medication]);
+  
 
   // handle deleting medication
   const handleDelete = async () => {

@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import TopBar from '../components/TopBar.jsx';
 import HeatMap from '../components/HeatMap.jsx';
 import Forecast from '../components/Forecast.jsx';
+import TodaysReminders from '../components/TodaysReminders.jsx';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -25,6 +26,7 @@ export default function Home() {
                 <SafeAreaView style={{ flex: 1, paddingTop: insets.top }}>
 
                     <ScrollView contentContainerStyle={styles.scrollContentContainer}>
+                        <TodaysReminders/>
                         <View style={styles.forecastWrapper}>
                                 <Forecast place={'california'} />
                         </View>
