@@ -9,9 +9,8 @@ from datetime import timedelta
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     location = models.CharField(max_length=255)
-    pollen_sensitivity = models.TextField()  # store sensitivity for different allergens (e.g., pollen, food)
+    city = models.CharField(max_length=255)
     medication_reminders_enabled = models.BooleanField(default=True)
-    symptom_tracking_enabled = models.BooleanField(default=True)
 
     def __str__(self):
         return self.user.username
@@ -72,9 +71,12 @@ class AllergenSpecies(models.Model):
     
 class DeviceToken(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    token = models.CharField(max_length=200, unique=False)
+    token = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
+    class Meta:
+        unique_together = ('user', 'token')  # Composite unique key
+
     def __str__(self):
         return f"{self.user.username} - {self.token}"
     

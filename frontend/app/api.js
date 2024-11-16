@@ -4,7 +4,7 @@ import { SERVER_IP, PROJECT_ID, AMBEE_API_KEY } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Replace with your actual backend URL
-const BASE_URL = SERVER_IP;  // Use your computer's IP address
+const BASE_URL = SERVER_IP; 
 
 // Axios instance for API calls
 const api = axios.create({
@@ -82,34 +82,46 @@ export const deleteMedication = async (medicationId) => {
     return false;
   }
   try {
+    const medication = await getMedications(medicationId);
+    
+    if (medication.reminder_notification_ids) {
+      await cancelNotifications(medication.reminder_notification_ids);
+    }
+    if (medication.refill_notification_id) {
+      await cancelNotifications([medication.refill_notification_id]);
+    }
+
     const response = await api.delete(`/allergy_tracker/medications/delete/${medicationId}/`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    console.log('Delete response:', response.status);
-    return response.status === 204; // Check if the status is 204 (No Content)
+
+    return response.status === 204;
   } catch (error) {
-    console.error("Error deleting medication from user:", error.response?.data || error.message);
+    console.error("Error deleting medication:", error.response?.data || error.message);
     return false;
   }
 };
 
 // function to get medicaiton from user
 export const getMedications = async () => {
-  const token = await AsyncStorage.getItem('token');
+  const token = await getAuthToken();
   if (!token) {
-    console.error('No token found, please log in again.');
+    console.warn('No token found, redirecting to login');
+    // Optionally redirect to login page
     return [];
   }
+
   try {
-    const response = await api.get(`/allergy_tracker/medications/`, {
+    const response = await api.get('/allergy_tracker/medications/', {
       headers: { Authorization: `Bearer ${token}` },
     });
-    return response.data;
+    return response.data || [];
   } catch (error) {
-    console.error('Error fetching medications:', error.response?.data || error);
-    throw error;
+    console.error('Error fetching medications:', error);
+    return [];
   }
 };
+
 
 export const postMedication = async (medication) => {
   const token = await AsyncStorage.getItem('token');
@@ -138,15 +150,20 @@ export const postMedication = async (medication) => {
 };
 
 
-
 const getAuthToken = async () => {
   try {
-    const token = await AsyncStorage.getItem('accessToken');
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      console.warn('No token found');
+      return null;
+    }
     return token;
   } catch (error) {
-    console.error('Failed to retrieve token:', error);
+    console.error('Error retrieving token:', error);
+    return null;
   }
 };
+
 
 // Function to log in user
 export const loginUser = async (username, password) => {
@@ -157,19 +174,20 @@ export const loginUser = async (username, password) => {
     });
 
     const { access } = response.data;
-
-    // Store the token in AsyncStorage
-    await AsyncStorage.setItem('token', access);
-
-    // Register the device token
-    await registerDeviceToken();
-
-    return response.data;
+    if (access) {
+      await AsyncStorage.setItem('token', access);
+      await registerDeviceToken();
+      return response.data;
+    } else {
+      throw new Error('No access token received');
+    }
   } catch (error) {
-    console.error('Error logging in:', error.response?.data || error.message);
-    throw error;
+    console.error('Error logging in:', error);
+    Alert.alert('Login Error', 'Please log in again');
+    return null;
   }
 };
+
 
 // Function to register a new user
 export const registerUser = async (email, password, password2, username, firstName, lastName) => {
@@ -197,52 +215,24 @@ export const registerDeviceToken = async () => {
   try {
     const token = await AsyncStorage.getItem('token');
     if (!token) {
-      console.error('No authentication token found');
+      console.warn('No authentication token found');
       return;
     }
 
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-    if (finalStatus !== 'granted') {
-      console.error('Failed to get push token for push notification!');
-      return;
-    }
-
-    // Ensure `PROJECT_ID` is defined
-    if (!PROJECT_ID) {
-      console.error('PROJECT_ID is missing');
-      return;
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status !== 'granted') {
+      await Notifications.requestPermissionsAsync();
     }
 
     const expoPushToken = (await Notifications.getExpoPushTokenAsync({ projectId: PROJECT_ID })).data;
     console.log('Expo Push Token:', expoPushToken);
 
-    // Register or update the token in the backend
-    await axios.post(
-      `${BASE_URL}/allergy_tracker/register-device-token/`,
-      { token: expoPushToken },
-      { headers: { Authorization: `Bearer ${token}` } }
-    ).catch(async (error) => {
-      if (error.response?.status === 500) {
-        console.log('Token already exists, updating...');
-        // Update the existing token instead of inserting a new one
-        await axios.put(
-          `${BASE_URL}/allergy_tracker/register-device-token/`,
-          { token: expoPushToken },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      } else {
-        throw error;
-      }
+    await axios.post(`${BASE_URL}/allergy_tracker/register-device-token/`, { token: expoPushToken }, {
+      headers: { Authorization: `Bearer ${token}` }
     });
-
-    console.log('Device token registered successfully');
   } catch (error) {
     console.error('Error registering device token:', error);
+    Alert.alert('Notification Error', 'Failed to register device for notifications');
   }
 };
 
@@ -253,12 +243,19 @@ const requestNotificationPermissions = async () => {
   const { status } = await Notifications.getPermissionsAsync();
   if (status !== 'granted') {
     const { status: newStatus } = await Notifications.requestPermissionsAsync();
-    return newStatus === 'granted';
+    if (newStatus !== 'granted') {
+      console.warn('Notifications permissions not granted');
+    }
   }
-  return true;
 };
 
-export const scheduleReminderNotifications = async (reminderTimes, medication, startDate, endDate, token) => {
+export const scheduleReminderNotifications = async (reminderTimes, medication, startDate, endDate) => {
+  const token = await AsyncStorage.getItem('token');
+  if (!token) {
+    console.error('No authentication token found');
+    return [];
+  }
+
   const notificationIds = [];
   const start = new Date(startDate);
   const end = new Date(endDate);
@@ -266,13 +263,12 @@ export const scheduleReminderNotifications = async (reminderTimes, medication, s
   for (const reminderTime of reminderTimes) {
     const time = new Date(reminderTime);
 
-    // Ensure reminderTime is valid and within the date range
     if (isNaN(time.getTime())) {
       console.error('Invalid reminder time:', reminderTime);
       continue;
     }
 
-    if (time >= new Date() && time <= end) { // Ensure time is in the future
+    if (time >= new Date() && time <= end) {
       try {
         const notificationId = await Notifications.scheduleNotificationAsync({
           content: {
@@ -289,6 +285,17 @@ export const scheduleReminderNotifications = async (reminderTimes, medication, s
       }
     }
   }
+
+  try {
+    await axios.post(
+      `${BASE_URL}/allergy_tracker/register-device-token/`,
+      { notification_ids: notificationIds },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  } catch (error) {
+    console.error('Error updating device token with notification IDs:', error.response?.data || error.message);
+  }
+
   return notificationIds;
 };
 
@@ -324,13 +331,11 @@ export const scheduleRefillNotification = async (refillDate, medication, token) 
 };
 
 
-// Function to cancel notifications using stored IDs
 export const cancelNotifications = async (notificationIds) => {
   for (const id of notificationIds) {
     await Notifications.cancelScheduledNotificationAsync(id);
   }
 };
-
 
 
 export const saveJournalEntry = async (data) => {
