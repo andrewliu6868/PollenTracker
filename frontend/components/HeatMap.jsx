@@ -6,8 +6,8 @@ import {Text, View, StyleSheet, ActivityIndicator} from 'react-native';
 
 const RADIUS = 5000;
 const GRID_SIZE = 3;
-const DEFAULT_REGION = {
-    latitude: 37.7749, // Default to San Francisco
+const DEFAULT_REGION = { // default to san fran for now, change later
+    latitude: 37.7749,
     longitude: -122.4194,
     latitudeDelta: 0.3,
     longitudeDelta: 0.3,
@@ -27,7 +27,6 @@ export default function HeatMap(props){
                lng >= -180 && lng <= 180;
     };
 
-    // Update mapRegion whenever props change
     useEffect(() => {
         if (validateCoordinate(props.lat, props.long)) {
             setMapRegion({
