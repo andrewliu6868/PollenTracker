@@ -1,5 +1,4 @@
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import ScreenWrap from '../components/ScreenWrap';
 import TopBar from '../components/TopBar';
 import React, { useState, useEffect } from 'react';
@@ -20,7 +19,7 @@ export default function Medication() {
         if (medsFromBackend && Array.isArray(medsFromBackend)) {
             console.log('Fetched medications:', medsFromBackend); // checking for id
             setMeds(medsFromBackend.map((med) => ({
-                id: med.id,  // Ensure `id` is present
+                id: med.id,
                 ...med,
               })));
         }
