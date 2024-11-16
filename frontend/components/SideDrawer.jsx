@@ -46,7 +46,13 @@ export default function SideDrawer({ visible, onClose }) {
                         style = {styles.itemText}
                         label="Symptom Tracking" 
                         active={active === 'third'} 
-                        onPress={() => handleNav(null, 'third')} 
+                        onPress={() => handleNav('/Journal', 'third')} 
+                    />
+                    <Drawer.Item 
+                        style = {styles.itemText}
+                        label="Insights" 
+                        active={active === 'third'} 
+                        onPress={() => handleNav('/Insights', 'fourth')} 
                     />
                 </Drawer.Section>
             </SafeAreaView>

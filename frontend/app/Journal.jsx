@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, TextInput, Alert, TouchableOpacity, ScrollView,
 import Slider from '@react-native-community/slider';
 import { theme } from '../style/theme';
 import ScreenWrap from '../components/ScreenWrap';
+import TopBar from '../components/TopBar';
 import { saveJournalEntry, getJournalEntries, getLatestPollenData  } from './api';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as Location from 'expo-location';
@@ -55,52 +56,52 @@ export default function Journal() {
         const { latitude, longitude } = location.coords;
     
         // Pass the location to the getLatestPollenData function
-        const data = await getLatestPollenData(latitude, longitude);
+        // const data = await getLatestPollenData(latitude, longitude);
 
-        // const data = {
-        //   "message": "success",
-        //   "lat": 41.3874,
-        //   "lng": 2.1686,
-        //   "data": [
-        //     {
-        //       "timezone": "Europe/Madrid",
-        //       "Species": {
-        //         "Grass": {
-        //           "Grass / Poaceae": 0
-        //         },
-        //         "Others": 0,
-        //         "Tree": {
-        //           "Alder": 0,
-        //           "Birch": 0,
-        //           "Cypress": 0,
-        //           "Elm": 0,
-        //           "Hazel": 0,
-        //           "Oak": 8,
-        //           "Pine": 0,
-        //           "Plane": 0,
-        //           "Poplar / Cottonwood": 0
-        //         },
-        //         "Weed": {
-        //           "Chenopod": 5,
-        //           "Mugwort": 0,
-        //           "Nettle": 0,
-        //           "Ragweed": 18
-        //         }
-        //       },
-        //       "Risk": {
-        //         "grass_pollen": "Low",
-        //         "tree_pollen": "Low",
-        //         "weed_pollen": "Moderate"
-        //       },
-        //       "Count": {
-        //         "grass_pollen": 0,
-        //         "tree_pollen": 8,
-        //         "weed_pollen": 25
-        //       },
-        //       "updatedAt": "2024-11-10T21:00:00.000Z"
-        //     }
-        //   ]
-        // };
+        const data = {
+          "message": "success",
+          "lat": 41.3874,
+          "lng": 2.1686,
+          "data": [
+            {
+              "timezone": "Europe/Madrid",
+              "Species": {
+                "Grass": {
+                  "Grass / Poaceae": 0
+                },
+                "Others": 0,
+                "Tree": {
+                  "Alder": 0,
+                  "Birch": 0,
+                  "Cypress": 0,
+                  "Elm": 0,
+                  "Hazel": 0,
+                  "Oak": 8,
+                  "Pine": 0,
+                  "Plane": 0,
+                  "Poplar / Cottonwood": 0
+                },
+                "Weed": {
+                  "Chenopod": 5,
+                  "Mugwort": 0,
+                  "Nettle": 0,
+                  "Ragweed": 18
+                }
+              },
+              "Risk": {
+                "grass_pollen": "Low",
+                "tree_pollen": "Low",
+                "weed_pollen": "Moderate"
+              },
+              "Count": {
+                "grass_pollen": 0,
+                "tree_pollen": 8,
+                "weed_pollen": 25
+              },
+              "updatedAt": "2024-11-10T21:00:00.000Z"
+            }
+          ]
+        };
         
         
         const filteredAllergens = ExtractTopAllergens(data);
@@ -228,10 +229,10 @@ export default function Journal() {
 
 
    return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.white} />
-
-      <ScrollView contentContainerStyle={styles.container}>
+    <ScreenWrap>
+      <View style={styles.container}>
+          <TopBar title="Journal" />
+      <ScrollView contentContainerStyle={styles.Journalcontainer}>
         <View style={styles.content}>
           <Text style={styles.title}>Track Your Symptoms</Text>
           
@@ -309,16 +310,16 @@ export default function Journal() {
           />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
+  </ScreenWrap>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.colors.white,
-  },
   container: {
+    flex: 1,
+  },
+  Journalcontainer: {
     flexGrow: 1,
     backgroundColor: theme.colors.white,
     padding: 20,

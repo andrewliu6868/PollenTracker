@@ -1,7 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import axios from 'axios';
-import { SERVER_IP } from '@env';
-import { PROJECT_ID } from '@env';
+import { SERVER_IP, PROJECT_ID, AMBEE_API_KEY } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Replace with your actual backend URL

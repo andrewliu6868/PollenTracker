@@ -3,6 +3,8 @@ import { View, Text, ScrollView, StyleSheet, Dimensions } from "react-native";
 import PieChartWithLegend from "../components/PieChartWithLegend";
 import AllergenInfoSection from "../components/AllergenInfoSection";
 import CollapsibleList from "../components/CollapsibleList";
+import ScreenWrap from '../components/ScreenWrap';
+import TopBar from '../components/TopBar';
 import { getWeeklyJournalEntries } from "./api";
 import { theme } from "../style/theme";
 
@@ -72,38 +74,46 @@ export default function Insights() {
   }));
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Insights</Text>
-      <View style={styles.chartsContainer}>
-        <PieChartWithLegend
-          data={allergenData}
-          chartSize={chartSize}
-          centerLabel="Top Allergens"
-        />
-        <PieChartWithLegend
-          data={symptomData}
-          chartSize={chartSize}
-          centerLabel="Top Symptoms"
-        />
+    <ScreenWrap>
+      <View style={styles.container}>
+          <TopBar title="Insights" />
+        <ScrollView contentContainerStyle={styles.Insightscontainer}>
+          <Text style={styles.title}>Your Allergies Last Week</Text>
+          <View style={styles.chartsContainer}>
+            <PieChartWithLegend
+              data={allergenData}
+              chartSize={chartSize}
+              centerLabel="Top Allergens"
+            />
+            <PieChartWithLegend
+              data={symptomData}
+              chartSize={chartSize}
+              centerLabel="Top Symptoms"
+            />
+          </View>
+          <View style={styles.learnContainer}>
+            <Text style={styles.sectionTitle}>Learn About Your Top Allergens</Text>
+            <AllergenInfoSection />
+          </View>
+          <View style={styles.tipsContainer}>
+            <CollapsibleList/>
+          </View>
+        </ScrollView>
       </View>
-      <View style={styles.learnContainer}>
-        <Text style={styles.sectionTitle}>Learn About Your Top Allergens</Text>
-        <AllergenInfoSection />
-      </View>
-      <View style={styles.tipsContainer}>
-        <CollapsibleList/>
-      </View>
-    </ScrollView>
+    </ScreenWrap>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  Insightscontainer: {
     padding: 15,
     backgroundColor: theme.colors.primaryLight,
   },
   title: {
-    marginTop: 25,
+    marginTop: 10,
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 15,
