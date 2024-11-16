@@ -72,9 +72,12 @@ class AllergenSpecies(models.Model):
     
 class DeviceToken(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    token = models.CharField(max_length=200, unique=False)
+    token = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
+    class Meta:
+        unique_together = ('user', 'token')  # Composite unique key
+
     def __str__(self):
         return f"{self.user.username} - {self.token}"
     

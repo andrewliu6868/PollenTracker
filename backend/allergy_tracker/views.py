@@ -109,13 +109,15 @@ def register_device_token(request):
         return Response({"error": "No token provided"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        # Check if the token already exists
+        DeviceToken.objects.filter(token=token).exclude(user=user).delete()
         device_token, created = DeviceToken.objects.update_or_create(
             user=user,
-            defaults={"token": token}
+            token=token,
+            defaults={'created_at': timezone.now()}
         )
+
         return Response({"message": "Token registered/updated successfully"}, status=status.HTTP_200_OK)
-    except IntegrityError:
-        return Response({"error": "Token already exists"}, status=status.HTTP_409_CONFLICT)
+    except IntegrityError as e:
+        return Response({"error": str(e)}, status=status.HTTP_409_CONFLICT)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

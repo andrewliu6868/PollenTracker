@@ -21,36 +21,35 @@ export default function Login() {
     const router = useRouter();
     const emailRef = useRef("");
     const passRef = useRef("");
-
-    const onSubmit = async() =>{
-        // check if all fields are filled in
-        if(!emailRef.current || !passRef.current){
-            Alert.alert('Login Error', 'Please fill in all fields!');
-            return;
-        }
-        
-        setLoading(true);  // Show loading indicator
-        try {
-            // Make the API call to login the user
-            const data = await loginUser(emailRef.current, passRef.current);
-            
-            // Save tokens (you can use AsyncStorage to save tokens locally)
-            const { access, refresh } = data;
-            // Save tokens in AsyncStorage
-            await AsyncStorage.setItem('accessToken', access);
-            await AsyncStorage.setItem('refreshToken', refresh);
-            console.log('Access Token:', access);
-            console.log('Refresh Token:', refresh);
     
-            // Direct to home page on successful login
-            setLoading(false);
-            router.push('/Insights');
-        } catch (error) {
-            setLoading(false);
-            console.error('Error logging in:', error);
-            Alert.alert('Login Error', 'Invalid email or password');
+    const onSubmit = async () => {
+        if (!emailRef.current || !passRef.current) {
+          Alert.alert('Login Error', 'Please fill in all fields!');
+          return;
         }
-    }
+      
+        setLoading(true);
+        try {
+          const data = await loginUser(emailRef.current, passRef.current);
+      
+          if (data?.access && data?.refresh) {
+            await AsyncStorage.setItem('accessToken', data.access);
+            await AsyncStorage.setItem('refreshToken', data.refresh);
+      
+            console.log('Tokens saved:', data);
+          } else {
+            throw new Error('No tokens received');
+          }
+      
+          setLoading(false);
+          router.push('/Home');
+        } catch (error) {
+          setLoading(false);
+          console.error('Error logging in:', error);
+          Alert.alert('Login Error', 'Invalid email or password');
+        }
+      };
+      
   return (
     <ScreenWrap>
         <StatusBar style="dark"/>
