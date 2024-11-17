@@ -7,6 +7,7 @@ import TopBar from '../components/TopBar';
 import { saveJournalEntry, getJournalEntries, getLatestPollenData  } from './api';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as Location from 'expo-location';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const symptomOptions = [
   { id: 'sneezing', label: 'Sneezing' },
@@ -225,7 +226,7 @@ export default function Journal() {
 
    return (
     <ScreenWrap>
-      <View style={styles.container}>
+      <LinearGradient style={styles.container} colors={theme.colors.gradients.green}>
           <TopBar title="Journal" />
       <ScrollView contentContainerStyle={styles.Journalcontainer}>
         <View style={styles.content}>
@@ -305,7 +306,7 @@ export default function Journal() {
           />
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   </ScreenWrap>
   );
 };
@@ -316,7 +317,6 @@ const styles = StyleSheet.create({
   },
   Journalcontainer: {
     flexGrow: 1,
-    backgroundColor: theme.colors.primary,
     padding: 20,
   },
   content: {
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: theme.colors.text,
+    color: theme.colors.white,
     marginBottom: 16,
   },
   section: {
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: theme.colors.text,
+    color: theme.colors.white,
     marginBottom: 8,
   },
   symptomsGrid: {
@@ -352,8 +352,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.primary,
+    borderWidth: 2,
+    borderColor: theme.colors.primaryDark,
     ...Platform.select({
       ios: {
         shadowColor: theme.colors.text,
@@ -367,8 +367,9 @@ const styles = StyleSheet.create({
     }),
   },
   symptomButtonSelected: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primaryLight,
+    borderColor: theme.colors.primaryDark,
+    borderWidth: 2,
   },
   symptomButtonText: {
     fontSize: 14,
@@ -397,7 +398,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: theme.colors.text,
     textAlign: 'center',
-    marginBottom: 2,
   },
   severityRange: {
     flexDirection: 'row',
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.primary,
   },
   saveButton: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.primaryDark,
     borderRadius: 8,
     padding: 14,
     alignItems: 'center',

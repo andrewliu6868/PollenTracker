@@ -77,7 +77,7 @@ export default function Insights() {
   return (
     <ScreenWrap>
        
-      <LinearGradient style={styles.container} colors={[theme.colors.primary, theme.colors.white]}>
+      <LinearGradient style={styles.container} colors={theme.colors.gradients.green}>
           <TopBar title="Insights" />
         <ScrollView contentContainerStyle={styles.Insightscontainer}>
           <Text style={styles.title}>Your Allergies Last Week</Text>
@@ -112,28 +112,22 @@ const styles = StyleSheet.create({
   },
   Insightscontainer: {
     padding: 15,
-    // backgroundColor: theme.colors.primaryDark,
   },
   title: {
-    backgroundColor: theme.colors.white,
-    color: theme.colors.black,
-    marginTop: 10,
+    color: theme.colors.white,
+    marginBottom: 15,
     fontSize: 24,
     fontWeight: "bold",
-    paddingTop: 15,
-    paddingLeft: 20,
-    borderTopLeftRadius : 15,
-    borderTopRightRadius : 15,
-    // marginBottom: 15,
   },
   chartsContainer: {
     backgroundColor: theme.colors.white,
-    borderBottomRightRadius: 15,
-    borderBottomLeftRadius: 15,
+    borderRadius: 15,
     padding: 20,
+    paddingHorizontal: 10,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
+    borderWidth: 1,
   },
   learnContainer: {
     marginTop: 20,

@@ -54,7 +54,7 @@ const PieChartWithLegend = ({ data, chartSize, centerLabel }) => {
 
 const styles = StyleSheet.create({
   chartWrapper: {
-    width: "45%",
+    width: "50%",
     alignItems: "center",
   },
   centerLabel: {
