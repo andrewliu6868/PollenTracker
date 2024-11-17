@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingBottom: 12,
         backgroundColor: '#ffffff',
         borderBottomWidth: 1,
         borderBottomColor: '#e0e0e0',
@@ -61,7 +61,6 @@ const styles = StyleSheet.create({
     logoText:{
         fontFamily: 'DancingScript',
         fontSize: 25,
-        // fontWeight: 'bold',
     },
     menuButton: {
         padding: 8,
