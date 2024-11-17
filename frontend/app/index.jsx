@@ -13,7 +13,7 @@ export default function Index() {
       try {
         // Load fonts
         await Font.loadAsync({
-          'Cursive': require('../assets/fonts/DancingScript-Regular.ttf'),
+          'DancingScript': require('../assets/fonts/DancingScript-Regular.ttf'),
         });
         setFontsLoaded(true);
 

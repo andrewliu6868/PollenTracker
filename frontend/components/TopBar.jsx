@@ -38,7 +38,7 @@ export default function TopBar({title}){
 
   return (
     <View style={styles.container}>
-      <Text style = {styles.container}>{title}</Text>
+      <Text style = {styles.logoText}>{title}</Text>
       <Pressable style={styles.menuButton} onPress={toggleDrawer}>
         <Menu strokeWidth={0.75} iconColor='#333'/>
       </Pressable>
@@ -59,9 +59,9 @@ const styles = StyleSheet.create({
         borderBottomColor: '#e0e0e0',
     },
     logoText:{
-        fontFamily: 'Cursive',
-        fontSize: 24,
-        fontWeight: 'bold',
+        fontFamily: 'DancingScript',
+        fontSize: 25,
+        // fontWeight: 'bold',
     },
     menuButton: {
         padding: 8,

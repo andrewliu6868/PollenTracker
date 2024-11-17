@@ -38,13 +38,13 @@ export default function SideDrawer({ visible, onClose }) {
                     />
                     <Drawer.Item 
                         style = {styles.itemText}
-                        label="Medications" 
+                        label="Medication Tracker" 
                         active={active === 'second'} 
                         onPress={() => handleNav('/Medication', 'second')} 
                     />
                     <Drawer.Item 
                         style = {styles.itemText}
-                        label="Symptom Tracking" 
+                        label="Symptom Journal" 
                         active={active === 'third'} 
                         onPress={() => handleNav('/Journal', 'third')} 
                     />
