@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons';
-import axios from 'axios';
-import { AMBEE_API_KEY } from '@env';
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, FlatList } from "react-native";
+import { FontAwesome5 } from "@expo/vector-icons";
+import axios from "axios";
+import { AMBEE_API_KEY } from "@env";
+import forecastInfo from '../data/forecastData';
 
 export default function Forecast({ place }) {
   const [forecastData, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const getLocalDate = (timestamp) => {
     const date = new Date(timestamp * 1000);
@@ -17,12 +18,15 @@ export default function Forecast({ place }) {
 
   const fetchData = async (place) => {
     try {
-      const res = await axios.get(`https://api.ambeedata.com/forecast/v2/pollen/120hr/by-place?place=${place}`, {
-        headers: { 'x-api-key': AMBEE_API_KEY }
-      });
+      const res = await axios.get(
+        `https://api.ambeedata.com/forecast/v2/pollen/120hr/by-place?place=${place}`,
+        {
+          headers: { "x-api-key": AMBEE_API_KEY },
+        }
+      );
       return res.data.data || [];
     } catch (err) {
-      console.error('Error fetching data:', err);
+      console.error("Error fetching data:", err);
       return [];
     }
   };
@@ -32,41 +36,8 @@ export default function Forecast({ place }) {
       setLoading(true);
       try {
         // const data = await fetchData(place);
-        const data =  {
-          "time": 1720429200,
-          "timezone": "America/Los_Angeles",
-          "Species": {
-              "Grass": {
-                  "Grass / Poaceae": 10
-              },
-              "Others": 0,
-              "Tree": {
-                  "Ash": 0,
-                  "Birch": 0,
-                  "Cypress / Juniper / Cedar": 0,
-                  "Elm": 0,
-                  "Maple": 0,
-                  "Mulberry": 0,
-                  "Oak": 0,
-                  "Pine": 0,
-                  "Poplar / Cottonwood": 0
-              },
-              "Weed": {
-                  "Ragweed": 27
-              }
-          },
-          "Risk": {
-              "grass_pollen": "Low",
-              "tree_pollen": "Low",
-              "weed_pollen": "Moderate"
-          },
-          "Count": {
-              "grass_pollen": 10,
-              "tree_pollen": 0,
-              "weed_pollen": 27
-          },
-          "updatedAt": "2024-07-08T09:00:00.000Z"
-      };
+        const data = forecastInfo;
+      
         const newData = [];
         const firstDays = new Set();
 
@@ -80,7 +51,7 @@ export default function Forecast({ place }) {
             dayOfWeek: date,
             treeLevel: curr.Count.tree_pollen,
             grassLevel: curr.Count.grass_pollen,
-            weedLevel: curr.Count.weed_pollen
+            weedLevel: curr.Count.weed_pollen,
           });
         }
         setData(newData);
@@ -137,52 +108,52 @@ export default function Forecast({ place }) {
 
 const styles = StyleSheet.create({
   container: {
-    width: '95%',
+    width: "95%",
     padding: 15,
-    backgroundColor: '#1E1F28',
+    backgroundColor: "#1E1F28",
     borderRadius: 15,
     marginBottom: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   forecastTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 15,
   },
   reminderItem: {
-    backgroundColor: '#2E7D32',
+    backgroundColor: "#2E7D32",
     padding: 10,
     borderRadius: 8,
     marginBottom: 10,
-    width: '100%',
+    width: "100%",
   },
   dayText: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   iconRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginVertical: 5,
   },
   levelText: {
     fontSize: 14,
-    color: '#A5D6A7',
+    color: "#A5D6A7",
     marginLeft: 10,
   },
   loadingText: {
-    color: '#A5D6A7',
+    color: "#A5D6A7",
     marginTop: 10,
   },
   errorText: {
-    color: '#FFB74D',
+    color: "#FFB74D",
     marginTop: 10,
   },
   noReminders: {
-    color: '#A5D6A7',
+    color: "#A5D6A7",
     marginTop: 10,
   },
 });
