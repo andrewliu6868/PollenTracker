@@ -4,6 +4,7 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import axios from "axios";
 import { AMBEE_API_KEY } from "@env";
 import forecastInfo from '../data/forecastData';
+import {theme } from '../style/theme';
 
 export default function Forecast({ place }) {
   const [forecastData, setData] = useState([]);
@@ -110,7 +111,7 @@ const styles = StyleSheet.create({
   container: {
     width: "95%",
     padding: 15,
-    backgroundColor: "#1E1F28",
+    backgroundColor: theme.colors.white,
     borderRadius: 15,
     marginBottom: 20,
     alignItems: "center",
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
   forecastTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#fff",
+    color: theme.colors.black,
     marginBottom: 15,
   },
   reminderItem: {

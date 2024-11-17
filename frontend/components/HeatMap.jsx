@@ -3,6 +3,7 @@ import { AMBEE_API_KEY } from '@env';
 import React, {useEffect, useState} from 'react';
 import MapView, {Marker, Circle} from 'react-native-maps';
 import {Text, View, StyleSheet, ActivityIndicator} from 'react-native';
+import {theme} from '../style/theme';
 
 const RADIUS = 5000;
 const GRID_SIZE = 3;
@@ -321,7 +322,7 @@ export default function HeatMap(props){
 }
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#1E1F28',
+        backgroundColor: theme.colors.white,
         borderRadius: 15,
         padding: 20,
         marginBottom: 30,
@@ -344,7 +345,7 @@ const styles = StyleSheet.create({
     forecastTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#fff',
+        color: theme.colors.black,
         marginRight: 10,
     },
     errorText: {
@@ -373,7 +374,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         width: '100%',
         paddingVertical: 10,
-        backgroundColor: '#2B2C36',
+        backgroundColor: theme.colors.primary,
         borderRadius: 10,
         marginBottom: 10,
     },
@@ -388,18 +389,18 @@ const styles = StyleSheet.create({
         marginRight: 5,
     },
     legendText: {
-        color: '#fff',
+        color: theme.colors.white,
         fontSize: 12,
     },
     info: {
         padding: 10,
-        backgroundColor: '#2B2C36',
+        backgroundColor: theme.colors.primary,
         borderRadius: 10,
         width: '100%',
         alignItems: 'flex-start',
     },
     infoText: {
-        color: '#fff',
+        color: theme.colors.white,
         fontSize: 14,
         marginBottom: 5,
     },

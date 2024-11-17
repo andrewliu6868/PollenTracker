@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, FlatList } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { getMedications } from '../app/api';
 import { format, isToday, parseISO } from 'date-fns';
+import { theme } from '../style/theme';
 
 export default function TodaysReminders() {
   const [medications, setMedications] = useState([]);
@@ -61,7 +62,7 @@ const styles = StyleSheet.create({
   container: {
     width: '95%',
     padding: 15,
-    backgroundColor: '#1E1F28',
+    backgroundColor: theme.colors.white,
     borderRadius: 15,
     marginBottom: 20,
     alignItems: 'center',
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: theme.colors.black,
     marginBottom: 10,
   },
   reminderItem: {
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   noReminders: {
-    color: '#A5D6A7',
+    color: theme.colors.primary,
     marginTop: 10,
     textAlign: 'center',
   },

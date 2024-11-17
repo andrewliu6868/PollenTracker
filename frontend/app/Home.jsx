@@ -144,10 +144,9 @@ export default function Home() {
 
     return (
         <ScreenWrap>
-            <View style={styles.topBarContainer}>
+            <LinearGradient colors={[theme.colors.primary, theme.colors.white]} style={styles.container}>
                 <TopBar title='PollenSense' />
-            </View>
-            <LinearGradient colors={['#2E7D32', '#A5D6A7']} style={{ flex: 1 }}>
+            
                 <SafeAreaView style={{ flex: 1, paddingTop: insets.top }}>
                 <FlatList
                     data={renderComponents}
@@ -162,24 +161,8 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
-    gradientContainer: {
+    container: {
         flex: 1,
-    },
-    safeArea: {
-        flex: 1,
-    },
-    topBarContainer: {
-        width: '100%',
-        height: 60,
-        backgroundColor: '#ffffff',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: 20,
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
     },
     componentContainer: {
         width: '100%',
