@@ -7,6 +7,7 @@ import ScreenWrap from '../components/ScreenWrap';
 import TopBar from '../components/TopBar';
 import { getWeeklyJournalEntries } from "./api";
 import { theme } from "../style/theme";
+import { LinearGradient } from 'expo-linear-gradient';
 
 const screenWidth = Dimensions.get("window").width;
 const chartSize = screenWidth * 0.5;
@@ -75,7 +76,8 @@ export default function Insights() {
 
   return (
     <ScreenWrap>
-      <View style={styles.container}>
+       
+      <LinearGradient style={styles.container} colors={[theme.colors.primary, theme.colors.white]}>
           <TopBar title="Insights" />
         <ScrollView contentContainerStyle={styles.Insightscontainer}>
           <Text style={styles.title}>Your Allergies Last Week</Text>
@@ -99,7 +101,7 @@ export default function Insights() {
             <CollapsibleList/>
           </View>
         </ScrollView>
-      </View>
+      </LinearGradient>
     </ScreenWrap>
   );
 }
@@ -110,17 +112,24 @@ const styles = StyleSheet.create({
   },
   Insightscontainer: {
     padding: 15,
-    backgroundColor: theme.colors.primaryLight,
+    // backgroundColor: theme.colors.primaryDark,
   },
   title: {
+    backgroundColor: theme.colors.white,
+    color: theme.colors.black,
     marginTop: 10,
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 15,
+    paddingTop: 15,
+    paddingLeft: 20,
+    borderTopLeftRadius : 15,
+    borderTopRightRadius : 15,
+    // marginBottom: 15,
   },
   chartsContainer: {
     backgroundColor: theme.colors.white,
-    borderRadius: 15,
+    borderBottomRightRadius: 15,
+    borderBottomLeftRadius: 15,
     padding: 20,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -140,7 +149,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     paddingHorizontal: 20,
-    fontSize: 18,
+    fontSize: 23,
     fontWeight: "bold",
   },
 });

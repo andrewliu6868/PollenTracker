@@ -124,14 +124,11 @@ export default function Journal() {
         return [];
       }
     
-      // Extract the Species object
       const speciesData = data.data[0].Species;
       const countData = data.data[0].Count;
     
-      // Flatten the Species object to get individual counts
       const allergensList = [];
     
-      // Extract non-zero counts from Grass, Tree, Weed, and Others
       if (countData.grass_pollen > 0) {
         Object.entries(speciesData.Grass).forEach(([name, count]) => {
           if(count > 0) allergensList.push({ name, count });
@@ -154,10 +151,8 @@ export default function Journal() {
         allergensList.push({ name: 'Others', count: speciesData.Others });
       }
     
-      // Sort the allergens by count in descending order
       allergensList.sort((a, b) => b.count - a.count);
     
-      // Get the top 5 allergens
       const filteredAllergens = allergensList.slice(0, 5);
     
     
@@ -321,11 +316,11 @@ const styles = StyleSheet.create({
   },
   Journalcontainer: {
     flexGrow: 1,
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.primary,
     padding: 20,
   },
   content: {
-    paddingBottom: 20,  // Prevent overlapping with bottom edge
+    paddingBottom: 20, 
   },
   title: {
     fontSize: 24,
