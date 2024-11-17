@@ -31,7 +31,42 @@ export default function Forecast({ place }) {
     const loadForecast = async () => {
       setLoading(true);
       try {
-        const data = await fetchData(place);
+        // const data = await fetchData(place);
+        const data =  {
+          "time": 1720429200,
+          "timezone": "America/Los_Angeles",
+          "Species": {
+              "Grass": {
+                  "Grass / Poaceae": 10
+              },
+              "Others": 0,
+              "Tree": {
+                  "Ash": 0,
+                  "Birch": 0,
+                  "Cypress / Juniper / Cedar": 0,
+                  "Elm": 0,
+                  "Maple": 0,
+                  "Mulberry": 0,
+                  "Oak": 0,
+                  "Pine": 0,
+                  "Poplar / Cottonwood": 0
+              },
+              "Weed": {
+                  "Ragweed": 27
+              }
+          },
+          "Risk": {
+              "grass_pollen": "Low",
+              "tree_pollen": "Low",
+              "weed_pollen": "Moderate"
+          },
+          "Count": {
+              "grass_pollen": 10,
+              "tree_pollen": 0,
+              "weed_pollen": 27
+          },
+          "updatedAt": "2024-07-08T09:00:00.000Z"
+      };
         const newData = [];
         const firstDays = new Set();
 
