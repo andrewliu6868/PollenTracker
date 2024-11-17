@@ -16,6 +16,7 @@ import {
 } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { theme } from "../style/theme";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get("window");
 const DRAWER_WIDTH = width * 0.8;
@@ -91,6 +92,17 @@ export default function SideDrawer({ visible, onClose }) {
     onClose();
   };
 
+  const handleLogout = async () => {
+    try {
+      // Clear the authentication token from AsyncStorage
+      await AsyncStorage.removeItem('token');
+      // Navigate to the login screen
+      router.push('/Login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
   return (
     <Modal
       transparent={true}
@@ -142,7 +154,7 @@ export default function SideDrawer({ visible, onClose }) {
           </View>
 
           {/* Footer */}
-          <TouchableOpacity style={styles.footer} onPress={handleClose}>
+          <TouchableOpacity style={styles.footer} onPress={handleLogout}>
             <MaterialCommunityIcons name="logout" size={24} color="#e74c3c" />
             <Text style={styles.footerText}>Logout</Text>
           </TouchableOpacity>
