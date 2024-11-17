@@ -23,7 +23,7 @@ const DRAWER_WIDTH = width * 0.8;
 
 export default function SideDrawer({ visible, onClose }) {
   const router = useRouter();
-  const insets = useSafeAreaInsets(); // Safe area insets for iPhone X and above
+  const insets = useSafeAreaInsets();
   const [active, setActive] = useState("");
   const slideAnim = useRef(new Animated.Value(DRAWER_WIDTH)).current;
 
@@ -65,9 +65,7 @@ export default function SideDrawer({ visible, onClose }) {
   const handleNav = (route, item) => {
     if (route) {
       setActive(item);
-      // Navigate immediately
       router.push(route);
-      // Close drawer and animate in parallel
       onClose();
       Animated.spring(slideAnim, {
         toValue: DRAWER_WIDTH,
@@ -81,22 +79,18 @@ export default function SideDrawer({ visible, onClose }) {
   };
 
   const handleClose = () => {
-    // Start closing animation
     Animated.spring(slideAnim, {
       toValue: DRAWER_WIDTH,
       useNativeDriver: true,
       tension: 65,
       friction: 11,
     }).start();
-    // Close drawer immediately
     onClose();
   };
 
   const handleLogout = async () => {
     try {
-      // Clear the authentication token from AsyncStorage
       await AsyncStorage.removeItem('token');
-      // Navigate to the login screen
       router.push('/Login');
     } catch (error) {
       console.error('Error logging out:', error);
@@ -122,11 +116,12 @@ export default function SideDrawer({ visible, onClose }) {
             styles.drawer,
             {
               transform: [{ translateX: slideAnim }],
+              paddingTop: insets.top, // Add top padding for safe area
+              paddingBottom: insets.bottom, // Add bottom padding for safe area
             },
           ]}
         >
-          {/* Navigation Items */}
-          <View style={styles.menuContainer}>
+          <View style={[styles.menuContainer, { paddingTop: 10 }]}>
             {menuItems.map((item) => (
               <TouchableOpacity
                 key={item.id}
@@ -153,11 +148,15 @@ export default function SideDrawer({ visible, onClose }) {
             ))}
           </View>
 
-          {/* Footer */}
-          <TouchableOpacity style={styles.footer} onPress={handleLogout}>
-            <MaterialCommunityIcons name="logout" size={24} color="#e74c3c" />
-            <Text style={styles.footerText}>Logout</Text>
-          </TouchableOpacity>
+          <View style={[styles.footer, { marginBottom: insets.bottom }]}>
+            <TouchableOpacity 
+              style={styles.footerButton}
+              onPress={handleLogout}
+            >
+              <MaterialCommunityIcons name="logout" size={24} color="#e74c3c" />
+              <Text style={styles.footerText}>Logout</Text>
+            </TouchableOpacity>
+          </View>
         </Animated.View>
       </View>
     </Modal>
@@ -187,7 +186,7 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   menuContainer: {
-    paddingTop: 20,
+    flex: 1,
   },
   menuItem: {
     flexDirection: "row",
@@ -211,13 +210,12 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   footer: {
-    position: "absolute",
-    bottom: 30,
-    left: 0,
-    right: 0,
+    paddingHorizontal: 30,
+    paddingVertical: 20,
+  },
+  footerButton: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 30,
   },
   footerText: {
     marginLeft: 15,

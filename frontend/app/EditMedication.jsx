@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Button, ScrollView, StyleSheet, Modal, Alert, Switch } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Modal, Alert, Switch, Platform, KeyboardAvoidingView } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
@@ -17,7 +17,86 @@ export default function EditMedication({ isVisible, onClose, medication, onSaveE
   const [refillReminder, setRefillReminder] = useState(false);
   const [selectedPickerIndex, setSelectedPickerIndex] = useState(null);
 
+  const [showAndroidTimePicker, setShowAndroidTimePicker] = useState(false);
+  const [showAndroidDatePicker, setShowAndroidDatePicker] = useState(false);
+  const [currentDatePickerField, setCurrentDatePickerField] = useState(null);
+
+
   const insets = useSafeAreaInsets();
+      // cross-platform rendering
+      const showDatePicker = (fieldName) => {
+        if (Platform.OS === 'android') {
+          setShowAndroidDatePicker(true);
+          setCurrentDatePickerField(fieldName);
+        }
+    };
+
+    const handleDateChange = (event, selectedDate) => {
+        if (Platform.OS === 'android') {
+          setShowAndroidDatePicker(false);
+        }
+    
+        if (selectedDate) {
+          switch (currentDatePickerField) {
+            case 'start':
+              setStartDate(selectedDate);
+              break;
+            case 'end':
+              setEndDate(selectedDate);
+              break;
+            case 'refill':
+              setRefillDate(selectedDate);
+              break;
+          }
+        }
+      };
+
+    const showTimePicker = (index) => {
+        if (Platform.OS === 'android') {
+          setShowAndroidTimePicker(true);
+          setSelectedPickerIndex(index);
+        } else {
+          setSelectedPickerIndex(index);
+        }
+      };
+
+      const handleTimeChange = (event, selectedTime, index) => {
+        if (Platform.OS === 'android') {
+          setShowAndroidTimePicker(false);
+        }
+        
+        if (selectedTime) {
+          handleReminderTimeChange(index, event, selectedTime);
+        }
+      };
+
+      const renderDatePicker = (value, onChange, label) => {
+        if (Platform.OS === 'ios') {
+          return (
+            <View style={styles.datePickerWrapper}>
+              <Text style={styles.dateLabel}>{label}</Text>
+              <DateTimePicker
+                value={value}
+                mode="date"
+                onChange={onChange}
+                style={styles.iosDatePicker}
+              />
+            </View>
+          );
+        }
+    
+        return (
+          <TouchableOpacity
+            style={styles.androidDateButton}
+            onPress={() => showDatePicker(label.toLowerCase())}
+          >
+            <Text style={styles.dateLabel}>{label}</Text>
+            <Text style={styles.dateButtonText}>
+              {value.toLocaleDateString()}
+            </Text>
+          </TouchableOpacity>
+        );
+      };
 
   // fetch the existing medication from the backend
   useEffect(() => {
@@ -40,7 +119,7 @@ export default function EditMedication({ isVisible, onClose, medication, onSaveE
   }, [medication]);
   
 
-  // handle deleting medication
+  // handle deleting medication entry
   const handleDelete = async () => {
     if (!medication || !medication.id) {
       console.error('Invalid medication data');
@@ -108,7 +187,7 @@ export default function EditMedication({ isVisible, onClose, medication, onSaveE
     };
   
     try {
-      // dlete the existing reminders
+      // delete the existing reminders
       if (updatedMedication.reminder_notification_ids) {
         await cancelNotifications(updatedMedication.reminder_notification_ids);
       }
@@ -156,95 +235,413 @@ export default function EditMedication({ isVisible, onClose, medication, onSaveE
   };
 
   return (
-    <Modal visible={isVisible} transparent={true} animationType="slide" onRequestClose={onClose}>
+    <Modal visible={isVisible} transparent={false} animationType="slide" onRequestClose={onClose}>
       <SafeAreaView style={{ paddingTop: insets.top, flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.container}>
-          <Text style={styles.title}>Edit Medication</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Medication Name"
-            value={medName}
-            onChangeText={setMedName}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Medication Description"
-            value={medDesc}
-            onChangeText={setMedDesc}
-          />
-          <Text style={styles.headerText}>Dosage</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter dosage"
-            value={dosage}
-            onChangeText={setDosage}
-          />
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardAvoidingView}
+      >
+      <View style={styles.modalContent}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Edit Medication</Text>
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView contentContainerStyle={styles.container}>
+          <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Medication Details</Text>
+              <TextInput
+                      style={styles.input}
+                      placeholder="Medication Name"
+                      value={medName}
+                      onChangeText={setMedName}
+                      placeholderTextColor="#666"
+                    />
+              <TextInput
+                      style={[styles.input, styles.textArea]}
+                      placeholder="Medication Description"
+                      value={medDesc}
+                      onChangeText={setMedDesc}
+                      placeholderTextColor="#666"
+                      multiline
+                      numberOfLines={Platform.OS === 'ios' ? null : 3}
+                      textAlignVertical="top"
+                    />
+            </View>
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Dosage</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter dosage (e.g., 2 tablets)"
+                  value={dosage}
+                  onChangeText={setDosage}
+                  placeholderTextColor="#666"
+                />
+            </View>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Reminder Schedule</Text>
 
-          <Text style={styles.headerText}>Frequency per Day</Text>
-          <Picker selectedValue={frequency} onValueChange={handleFreqChange} style={styles.picker}>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
-              <Picker.Item key={value} label={`${value} times per day`} value={value} />
-            ))}
-          </Picker>
+              <Text style={styles.inputLabel}>Times per day</Text>
+                <View style={styles.pickerWrapper}>
+                    <View style={styles.pickerContainer}>
+                    <Picker
+                        selectedValue={frequency}
+                        onValueChange={handleFreqChange}
+                        style={styles.picker}
+                        itemStyle={styles.pickerItem}
+                    >
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
+                        <Picker.Item
+                            key={value}
+                            label={`${value} ${value === 1 ? 'time' : 'times'} per day`}
+                            value={value}
+                        />
+                        ))}
+                    </Picker>
+                    </View>
+                </View>
 
-          {reminderTimes.map((time, index) => (
-            <View key={index}>
-              <Button title={`Pick Time ${index + 1}`} onPress={() => setSelectedPickerIndex(index)} />
-              {selectedPickerIndex === index && (
+              <Text style={[styles.inputLabel, { marginTop: 16 }]}>Reminder Times</Text>
+                <View style={styles.timePickersContainer}>
+                    {reminderTimes.map((time, index) => (
+                    <TouchableOpacity
+                        key={index}
+                        style={styles.timePickerButton}
+                        onPress={() => showTimePicker(index)}
+                    >
+                        <Text style={styles.timePickerButtonText}>
+                        {time instanceof Date
+                            ? time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            : `Set Time ${index + 1}`}
+                        </Text>
+                    </TouchableOpacity>
+                    ))}
+                </View>
+
+            {Platform.OS === 'android' && showAndroidTimePicker && (
                 <DateTimePicker
-                  value={time instanceof Date ? time : new Date()}
-                  mode="time"
+                value={reminderTimes[selectedPickerIndex] || new Date()}
+                mode="time"
+                is24Hour={false}
+                display="default"
+                onChange={(event, selectedTime) => 
+                    handleTimeChange(event, selectedTime, selectedPickerIndex)
+                }/>
+            )}
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Duration</Text>
+              <View style={styles.datePickerContainer}>
+                {renderDatePicker(startDate, handleDateChange, 'start')}
+                {renderDatePicker(endDate, handleDateChange, 'end')}
+              </View>
+
+              {Platform.OS === 'android' && showAndroidDatePicker && (
+                <DateTimePicker
+                  value={
+                    currentDatePickerField === 'start' 
+                      ? startDate 
+                      : currentDatePickerField === 'end'
+                      ? endDate
+                      : refillDate
+                  }
+                  mode="date"
                   display="default"
-                  onChange={(event, selectedTime) => handleReminderTimeChange(index, event, selectedTime)}
+                  onChange={handleDateChange}
                 />
               )}
             </View>
-          ))}
 
-          <Text style={styles.headerText}>Start Date</Text>
-          <DateTimePicker value={startDate} mode="date" onChange={(e, date) => setStartDate(date)} />
+            <View style={styles.section}>
+              <View style={styles.switchContainer}>
+                <Text style={styles.switchLabel}>Refill Reminder</Text>
+                <Switch
+                  value={refillReminder}
+                  onValueChange={setRefillReminder}
+                  trackColor={{ false: '#767577', true: '#81b0ff' }}
+                  thumbColor={refillReminder ? '#2196F3' : '#f4f3f4'}
+                  ios_backgroundColor="#767577"
+                />
+              </View>
+              {refillReminder && renderDatePicker(refillDate, handleDateChange, 'refill')}
+            </View>
 
-          <Text style={styles.headerText}>End Date</Text>
-          <DateTimePicker value={endDate} mode="date" onChange={(e, date) => setEndDate(date)} />
-
-          <View style={styles.switchContainer}>
-            <Text>Refill Reminder</Text>
-            <Switch value={refillReminder} onValueChange={setRefillReminder} />
-          </View>
-          {refillReminder && (
-            <DateTimePicker value={refillDate} mode="date" onChange={(e, date) => setRefillDate(date)} />
-          )}
-
-          <Button title="Save Changes" onPress={handleSave} />
-          <Button title="Delete Entry" onPress={handleDelete}/>
-          <Button title="Close" onPress={onClose} />
-        </ScrollView>
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+              <Text style={styles.saveButtonText}>Save Medication</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+              <Text style={styles.deleteButtonText}>Delete Medication</Text>
+            </TouchableOpacity>
+          </ScrollView>
+      </View>
+      </KeyboardAvoidingView>
       </SafeAreaView>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  modalContent: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     padding: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
     backgroundColor: '#fff',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    color: '#333',
   },
-  redTitle: {
-    color: 'red',
+  closeButton: {
+    padding: 8,
+  },
+  closeButtonText: {
     fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    color: '#666',
+  },
+  section: {
+    marginBottom: 24,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 12,
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
+    height: 48,
+    borderColor: '#e0e0e0',
     borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 10,
+    borderRadius: 8,
+    marginBottom: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: '#333',
+    backgroundColor: '#f8f8f8',
+  },
+  textArea: {
+    height: 100,
+    paddingTop: 12,
+    paddingBottom: 12,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  switchLabel: {
+    fontSize: 16,
+    color: '#333',
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    marginBottom: 16,
+    backgroundColor: '#f8f8f8',
+  },
+  picker: {
+    height: 48,
+  },
+  timePickersContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  timePickerButton: {
+    flex: 1,
+    minWidth: '45%',
+    backgroundColor: '#f0f0f0',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  timePickerButtonText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  datePickerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  datePickerWrapper: {
+    flex: 1,
+  },
+  iosDatePicker: {
+    backgroundColor: '#f8f8f8',
+    borderRadius: 8,
+  },
+  androidDateButton: {
+    flex: 1,
+    backgroundColor: '#f8f8f8',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  dateLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
+  },
+  dateButtonText: {
+    fontSize: 16,
+    color: '#333',
+    marginTop: 4,
+  },
+
+pickerWrapper: {
+  backgroundColor: '#f8f8f8',
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: '#e0e0e0',
+  overflow: 'hidden', 
+},
+pickerContainer: {
+  backgroundColor: '#f8f8f8',
+  ...Platform.select({
+    ios: {
+      paddingVertical: 8,
+    },
+    android: {
+      paddingHorizontal: 16,
+    },
+  }),
+},
+picker: {
+  ...Platform.select({
+    ios: {
+      height: 160, 
+    },
+    android: {
+      height: 48, 
+    },
+  }),
+},
+  pickerItem: {
+      fontSize: 16,
+      color: '#333',
+  },
+  inputLabel: {
+      fontSize: 14,
+      fontWeight: '500',
+      color: '#666',
+      marginBottom: 8,
+  },
+  timePickersContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginTop: 8,
+  },
+  timePickerButton: {
+      flex: 1,
+      minWidth: '45%',
+      backgroundColor: '#f8f8f8',
+      padding: 12,
+      borderRadius: 8,
+      alignItems: 'center',
+      marginBottom: 8,
+      borderWidth: 1,
+      borderColor: '#e0e0e0',
+  },
+  timePickerButtonText: {
+      fontSize: 16,
+      color: '#333',
+  },
+  saveButton: {
+    backgroundColor: '#2196F3',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 32,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  deleteButton: {
+    backgroundColor: '#F44336', // Material Design red
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 32,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  deleteButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
