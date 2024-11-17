@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { updateMedication, deleteMedication, cancelNotifications, scheduleReminderNotifications, scheduleRefillNotification } from './api.js';
+import { updateMedication, deleteMedication, cancelNotifications } from './api.js';
 
 export default function EditMedication({ isVisible, onClose, medication, onSaveEdit, onDelete }) {
   const [medName, setMedName] = useState('');
@@ -55,7 +55,7 @@ export default function EditMedication({ isVisible, onClose, medication, onSaveE
         style: 'destructive',
         onPress: async () => {
           try {
-            // Cancel all existing notifications before deleting
+            // make sure to delete existing notifications
             if (medication.reminder_notification_ids) {
               await cancelNotifications(medication.reminder_notification_ids);
             }
@@ -108,36 +108,16 @@ export default function EditMedication({ isVisible, onClose, medication, onSaveE
     };
   
     try {
-      // Cancel existing notifications
+      // dlete the existing reminders
       if (updatedMedication.reminder_notification_ids) {
         await cancelNotifications(updatedMedication.reminder_notification_ids);
       }
       if (updatedMedication.refill_notification_id) {
         await cancelNotifications([updatedMedication.refill_notification_id]);
       }
-  
-      // Update medication in the backend
+      
+      // update with new reminders
       const savedMedication = await updateMedication(medication.id, updatedMedication);
-  
-      // Schedule new reminder notifications
-      if (reminderTimes.length > 0) {
-        const newReminderNotificationIds = await scheduleReminderNotifications(
-          updatedMedication.reminder_times,
-          updatedMedication,
-          startDate,
-          endDate
-        );
-        savedMedication.reminder_notification_ids = newReminderNotificationIds;
-      }
-  
-      // Schedule a new refill notification if applicable
-      if (refillReminder && refillDate) {
-        const newRefillNotificationId = await scheduleRefillNotification(
-          updatedMedication.refill_date,
-          updatedMedication
-        );
-        savedMedication.refill_notification_id = newRefillNotificationId;
-      }
   
       onSaveEdit(savedMedication);
       onClose();
@@ -145,7 +125,8 @@ export default function EditMedication({ isVisible, onClose, medication, onSaveE
       console.error('Error updating medication:', error);
       Alert.alert('Error', 'Failed to update medication');
     }
-  };  
+  };
+  
 
   // event handler for frequency changes
   const handleFreqChange = (freq) => {

@@ -12,64 +12,111 @@ const api = axios.create({
   timeout: 10000,  // Timeout after 10 seconds
 });
 
-export const updateMedication = async (medicationId, updatedMed) => {
-  const token = await AsyncStorage.getItem('token');
-  if (!token) {
-    console.error('No token found, please log in again');
-    return null;
+// cache the expo push token to avoid losing the value
+let cachedExpoPushToken = null;
+
+export const getExpoPushToken = async () => {
+  // Return the cached token if it's already set
+  if (cachedExpoPushToken) {
+    console.log('[DEBUG] Using cached Expo Push Token:', cachedExpoPushToken);
+    return cachedExpoPushToken;
   }
 
   try {
-    // Ensure reminder times are in the correct format before updating
-    const formattedReminderTimes = updatedMed.reminder_times?.map((time) => 
-      typeof time === 'string' ? new Date(time) : time
-    );
+    // Check if the token is stored in AsyncStorage
+    const storedToken = await AsyncStorage.getItem('expo_push_token');
+    if (storedToken && storedToken.startsWith("ExponentPushToken")) {
+      console.log('[DEBUG] Retrieved Expo Push Token from storage:', storedToken);
+      cachedExpoPushToken = storedToken;
+      return storedToken;
+    }
 
-    // Cancel existing notifications if they exist
-    if (updatedMed.reminder_notification_ids && updatedMed.reminder_notification_ids.length > 0) {
+    // If not found, fetch a new token
+    const { data: expoPushToken } = await Notifications.getExpoPushTokenAsync({ projectId: PROJECT_ID });
+    
+    if (expoPushToken && expoPushToken.startsWith("ExponentPushToken")) {
+      console.log('[DEBUG] Fetched new Expo Push Token:', expoPushToken);
+      cachedExpoPushToken = expoPushToken;
+      await AsyncStorage.setItem('expo_push_token', expoPushToken);
+      return expoPushToken;
+    }
+
+    console.error('[ERROR] Failed to get a valid Expo Push Token');
+    return null;
+  } catch (error) {
+    console.error('[ERROR] Error getting Expo Push Token:', error.message);
+    return null;
+  }
+};
+
+const EXPO_PUSH_ENDPOINT = "https://exp.host/--/api/v2/push/send";
+
+
+export const updateMedication = async (medicationId, updatedMed) => {
+  const token = await AsyncStorage.getItem('token');
+  if (!token) {
+    throw new Error('No token found, please log in again');
+  }
+
+  try {
+    const expoPushToken = await getExpoPushToken();
+    if (!expoPushToken) {
+      throw new Error('Failed to get valid Expo Push Token');
+    }
+
+    // delete any scheduled notifications
+    if (updatedMed.reminder_notification_ids?.length > 0) {
       await cancelNotifications(updatedMed.reminder_notification_ids);
     }
+    
     if (updatedMed.refill_notification_id) {
       await cancelNotifications([updatedMed.refill_notification_id]);
     }
 
-    // Prepare the updated medication object
+    // ensure reminders are valid dates
+    const formattedReminderTimes = updatedMed.reminder_times?.map(time => 
+      typeof time === 'string' ? new Date(time) : time
+    );
+
+    // format the medication objects
     const medicationData = {
       ...updatedMed,
       reminder_times: formattedReminderTimes,
+      expo_push_token: expoPushToken
     };
 
-    // Update medication on the backend
-    const response = await api.put(`/allergy_tracker/medications/${medicationId}/`, medicationData, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    // put call to update
+    const response = await api.put(
+      `/allergy_tracker/medications/${medicationId}/`, 
+      medicationData,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
     const savedMedication = response.data;
 
-    // Reschedule notifications if needed
+    // reschedule the reminders
     if (formattedReminderTimes?.length > 0) {
-      const newReminderNotificationIds = await scheduleReminderNotifications(
+      const newNotificationIds = await scheduleReminderNotifications(
         formattedReminderTimes,
         savedMedication,
         updatedMed.start_date,
-        updatedMed.end_date,
-        token
+        updatedMed.end_date
       );
-      savedMedication.reminder_notification_ids = newReminderNotificationIds;
+      savedMedication.reminder_notification_ids = newNotificationIds;
     }
 
+    // rescheulde the refill date
     if (updatedMed.refill_reminder && updatedMed.refill_date) {
-      const newRefillNotificationId = await scheduleRefillNotification(
+      const refillNotificationId = await scheduleRefillNotification(
         updatedMed.refill_date,
-        savedMedication,
-        token
+        savedMedication
       );
-      savedMedication.refill_notification_id = newRefillNotificationId;
+      savedMedication.refill_notification_id = refillNotificationId;
     }
 
     return savedMedication;
   } catch (error) {
-    console.error('Error updating medication:', error.response?.data || error.message);
+    console.error('Error updating medication:', error);
     throw error;
   }
 };
@@ -122,29 +169,59 @@ export const getMedications = async () => {
   }
 };
 
-
 export const postMedication = async (medication) => {
-  const token = await AsyncStorage.getItem('token');
-  if (!token) {
+  const jwtToken = await AsyncStorage.getItem('token');
+  if (!jwtToken) {
     console.error('No authentication token found');
     return;
   }
 
   try {
-    console.log('Sending medication data:', medication);
-    const response = await api.post('/allergy_tracker/medications/add/', medication, {
-      headers: { Authorization: `Bearer ${token}` },
+    // Get push token first
+    const expoPushToken = await getExpoPushToken();
+    if (!expoPushToken) {
+      throw new Error('Failed to get valid Expo Push Token');
+    }
+
+    // Add the push token to the medication object
+    const medicationWithToken = {
+      ...medication,
+      expo_push_token: expoPushToken
+    };
+
+    console.log('Sending medication data:', medicationWithToken);
+    const response = await api.post('/allergy_tracker/medications/add/', medicationWithToken, {
+      headers: { Authorization: `Bearer ${jwtToken}` },
     });
 
     const savedMedication = response.data;
-    console.log('Medication saved:', savedMedication);
+    console.log('[DEBUG] Medication saved:', savedMedication);
+
+    // scheduler reminders
+    if (medication.reminder_times?.length > 0) {
+      const notificationIds = await scheduleReminderNotifications(
+        medication.reminder_times,
+        savedMedication,
+        medication.start_date,
+        medication.end_date,
+      );
+      
+      if (notificationIds.length > 0) {
+        savedMedication.reminder_notification_ids = notificationIds;
+        await updateMedication(savedMedication.id, updatedMedication);
+      }
+    }
+    // schedule refill
+    if(medication.refill_reminder && medication.refillDate){
+      const refillId = await scheduleRefillNotification(medication.refillDate, savedMedication);
+      savedMedication.refill_notification_id = refillId;
+    }
+
+    await updateMedication(savedMedication.id, updatedMedication);
+
     return savedMedication;
   } catch (error) {
-    if (error.response) {
-      console.error('Error adding medication:', error.response.data);
-    } else {
-      console.error('Network or other error:', error.message);
-    }
+    console.error('Error adding medication:', error.message);
     throw error;
   }
 };
@@ -213,28 +290,46 @@ export const registerUser = async (email, password, password2, username, firstNa
 
 export const registerDeviceToken = async () => {
   try {
-    const token = await AsyncStorage.getItem('token');
-    if (!token) {
-      console.warn('No authentication token found');
+    const jwtToken = await AsyncStorage.getItem('token');
+    if (!jwtToken) {
+      console.warn('[DEBUG] No authentication token found');
       return;
     }
 
+    // Request notification permissions
     const { status } = await Notifications.getPermissionsAsync();
     if (status !== 'granted') {
       await Notifications.requestPermissionsAsync();
     }
 
-    const expoPushToken = (await Notifications.getExpoPushTokenAsync({ projectId: PROJECT_ID })).data;
-    console.log('Expo Push Token:', expoPushToken);
+    // Get the Expo Push Token
+    const { data: expoPushToken } = await Notifications.getExpoPushTokenAsync({ projectId: PROJECT_ID });
 
-    await axios.post(`${BASE_URL}/allergy_tracker/register-device-token/`, { token: expoPushToken }, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    if (!expoPushToken || !expoPushToken.startsWith("ExponentPushToken")) {
+      console.error('[ERROR] Invalid Expo Push Token:', expoPushToken);
+      return;
+    }
+
+    console.log('[DEBUG] Successfully retrieved Expo Push Token:', expoPushToken);
+
+    // Store the token in both AsyncStorage and a global variable
+    cachedExpoPushToken = expoPushToken;
+    await AsyncStorage.setItem('expo_push_token', expoPushToken);
+
+    // Send the Expo Push Token to your backend
+    await axios.post(
+      `${BASE_URL}/allergy_tracker/register-device-token/`, 
+      { expo_push_token: expoPushToken }, 
+      { headers: { Authorization: `Bearer ${jwtToken}` } }
+    );
+
+    console.log('[DEBUG] Expo Push Token registered successfully');
+    return expoPushToken;
   } catch (error) {
-    console.error('Error registering device token:', error);
-    Alert.alert('Notification Error', 'Failed to register device for notifications');
+    console.error('[ERROR] Error registering device token:', error.message);
   }
 };
+
 
 
 
@@ -250,10 +345,10 @@ const requestNotificationPermissions = async () => {
 };
 
 export const scheduleReminderNotifications = async (reminderTimes, medication, startDate, endDate) => {
-  const token = await AsyncStorage.getItem('token');
-  if (!token) {
-    console.error('No authentication token found');
-    return [];
+  const expoPushToken = await getExpoPushToken();
+  console.log(`[DEBUG] Scheduling notification with token: ${expoPushToken}`);
+  if (!expoPushToken) {
+    throw new Error('No valid Expo Push Token provided');
   }
 
   const notificationIds = [];
@@ -262,70 +357,107 @@ export const scheduleReminderNotifications = async (reminderTimes, medication, s
 
   for (const reminderTime of reminderTimes) {
     const time = new Date(reminderTime);
-
     if (isNaN(time.getTime())) {
-      console.error('Invalid reminder time:', reminderTime);
+      console.error('[ERROR] Invalid reminder time:', reminderTime);
       continue;
     }
 
+    // Only schedule if the time is in the future and before end date
     if (time >= new Date() && time <= end) {
       try {
-        const notificationId = await Notifications.scheduleNotificationAsync({
-          content: {
-            title: `Reminder: ${medication.med_name}`,
-            body: `Take your medication: ${medication.dosage}`,
-            sound: 'default',
+        const notificationData = {
+          to: expoPushToken,
+          title: `Reminder: ${medication.med_name}`,
+          body: `It's time to take your medication: ${medication.dosage}`,
+          sound: 'default',
+          priority: 'high',
+          data: { 
+            medicationId: medication.id,
+            type: 'medication_reminder'
           },
-          trigger: { date: time },
-        });
+        };
 
-        notificationIds.push(notificationId);
+        const response = await axios.post(
+          EXPO_PUSH_ENDPOINT, 
+          notificationData,
+          {
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            }
+          }
+        );
+
+        if (response.data?.data?.id) {
+          notificationIds.push(response.data.data.id);
+          console.log(`[DEBUG] Successfully scheduled notification: ${response.data.data.id}`);
+        } else {
+          console.error('[ERROR] No notification ID received:', response.data);
+        }
       } catch (error) {
-        console.error('Error scheduling reminder notification:', error);
+        console.error('[ERROR] Failed to schedule notification:', error.response?.data || error.message);
       }
     }
-  }
-
-  try {
-    await axios.post(
-      `${BASE_URL}/allergy_tracker/register-device-token/`,
-      { notification_ids: notificationIds },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-  } catch (error) {
-    console.error('Error updating device token with notification IDs:', error.response?.data || error.message);
   }
 
   return notificationIds;
 };
 
-
-
-export const scheduleRefillNotification = async (refillDate, medication, token) => {
+export const scheduleRefillNotification = async (refillDate, medication) => {
+  const expoPushToken = await getExpoPushToken();
   const refillTime = new Date(refillDate);
 
   if (isNaN(refillTime.getTime())) {
-    console.error('Invalid refill date:', refillDate);
+    console.error('[ERROR] Invalid refill date:', refillDate);
     return null;
   }
 
   if (refillTime < new Date()) {
-    console.error('Refill date is in the past:', refillDate);
+    console.error('[ERROR] Refill date is in the past:', refillDate);
+    return null;
+  }
+
+  if (!expoPushToken || !expoPushToken.startsWith("ExponentPushToken")) {
+    console.error('[ERROR] Invalid Expo Push Token:', expoPushToken);
     return null;
   }
 
   try {
-    const notificationId = await Notifications.scheduleNotificationAsync({
-      content: {
-        title: `Refill Reminder: ${medication.med_name}`,
-        body: "It's time to refill your medication!",
-        sound: 'default',
+    console.log('[DEBUG] Scheduling refill notification with token:', expoPushToken);
+
+    const notificationData = {
+      to: expoPushToken,
+      title: `Refill Reminder: ${medication.med_name}`,
+      body: "It's time to refill your medication!",
+      sound: 'default',
+      priority: 'high',
+      data: { 
+        medicationId: medication.id,
+        type: 'refill_reminder'
       },
-      trigger: { date: refillTime },
-    });
-    return notificationId;
+      trigger: { date: refillTime }
+    };
+
+    const response = await axios.post(
+      EXPO_PUSH_ENDPOINT,
+      notificationData,
+      {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        }
+      }
+    );
+
+    if (response.data?.data?.id) {
+      console.log('[DEBUG] Refill notification scheduled:', response.data.data.id);
+      return response.data.data.id;
+    } else {
+      console.error('[ERROR] Failed to schedule refill notification:', response.data);
+      return null;
+    }
   } catch (error) {
-    console.error('Error scheduling refill notification:', error);
+    console.error('[ERROR] Error scheduling refill notification:', error.response?.data || error.message);
     return null;
   }
 };

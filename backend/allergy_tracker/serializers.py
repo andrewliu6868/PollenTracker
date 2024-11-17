@@ -52,16 +52,21 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 class MedicationSerializer(serializers.ModelSerializer):
+    expo_push_token = serializers.CharField(write_only=True, required=False)  # Add this line
+
     class Meta:
         model = Medication
         fields = [
             'id', 'med_name', 'description', 'dosage', 'frequency',
             'reminder_times', 'reminder_notification_ids', 'refill_notification_id',
-            'refill_reminder', 'refill_date', 'start_date', 'end_date'
+            'refill_reminder', 'refill_date', 'start_date', 'end_date', 'expo_push_token'
         ]
         read_only_fields = ['user']
 
     def create(self, validated_data):
+        # Extract expo_push_token before saving the medication
+        expo_push_token = validated_data.pop('expo_push_token', None)
+
         # Associate medication with the current user
         validated_data['user'] = self.context['request'].user
         medication = super().create(validated_data)
@@ -71,10 +76,8 @@ class MedicationSerializer(serializers.ModelSerializer):
         if not raw_token:
             raise ValueError("Missing Authorization token")
 
-        # Extract the actual token by removing the 'Bearer' prefix if present
         token = raw_token.replace('Bearer ', '') if 'Bearer' in raw_token else raw_token
 
-        # Verify token is not empty after processing
         if not token:
             raise ValueError("Invalid Authorization token")
 
@@ -85,23 +88,23 @@ class MedicationSerializer(serializers.ModelSerializer):
                 medication,
                 validated_data['start_date'],
                 validated_data['end_date'],
-                token  # Ensure the token is passed here
+                expo_push_token  # Use the push token here
             )
 
             if validated_data['refill_reminder'] and validated_data['refill_date']:
                 medication.refill_notification_id = schedule_refill_notification(
                     validated_data['refill_date'],
                     medication,
-                    token  # Ensure the token is passed here
+                    expo_push_token
                 )
 
             medication.save()
         except Exception as e:
-            # Handle any exceptions that occur during scheduling
             print(f"Error scheduling notifications: {e}")
             raise serializers.ValidationError("Failed to schedule notifications")
 
         return medication
+
 
 
 class SymptomTrackingSerializer(serializers.ModelSerializer):

@@ -1,4 +1,4 @@
-import { View, ScrollView, Text, StyleSheet, Alert } from 'react-native'
+import { View, ScrollView, Text, StyleSheet, Alert, KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native'
 import React from 'react'
 import { useRef, useState } from 'react'
 import { useRouter } from 'expo-router'
@@ -49,42 +49,109 @@ export default function SignUp() {
   }
 
   return (
-    <ScreenWrap>
+    <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
-      <ScrollView style={styles.container}>
-        <BackButton router={router} />
-
-        <Text style={styles.titleText}>
-          Welcome to AllergyTracker!
-        </Text>
-
-        <View style={styles.spacing}>
-          <CustomInput icon={<Email strokeWidth={0.75} iconColor={theme.colors.gray} />} placeholder="Enter your email" onChangeText={(text) => { emailRef.current = text }} />
-          <CustomInput icon={<UserIcon strokeWidth={0.75} iconColor={theme.colors.gray} />} placeholder="Enter your first name" onChangeText={(text) => { fnRef.current = text }} />
-          <CustomInput icon={<UserIcon strokeWidth={0.75} iconColor={theme.colors.gray} />} placeholder="Enter your last name" onChangeText={(text) => { lnRef.current = text }} />
-          <CustomInput icon={<UserIcon strokeWidth={0.75} iconColor={theme.colors.gray} />} placeholder="Enter your username" onChangeText={(text) => { usernameRef.current = text }} />
-          <CustomInput icon={<Password strokeWidth={0.75} iconColor={theme.colors.gray} />} placeholder="Enter your password" secureTextEntry={true} onChangeText={(text) => { passRef.current = text }} />
-          <CustomInput icon={<Password strokeWidth={0.75} iconColor={theme.colors.gray} />} placeholder="Confirm your password" secureTextEntry={true} onChangeText={(text) => { confirmPassRef.current = text }} />
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardView}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
+          <View style={styles.header}>
+            <BackButton router={router} />
+            <Text style={styles.titleText}>
+              Welcome to{'\n'} PollenPulse!
+            </Text>
           </View>
 
-        <Button text="Submit" loading={loading} onPress={onSubmit} />
-      </ScrollView>
-    </ScreenWrap>
+          <View style={styles.formContainer}>
+            <CustomInput 
+              icon={<Email strokeWidth={0.75} iconColor={theme.colors.gray} />} 
+              placeholder="Enter your email"
+              onChangeText={(text) => { emailRef.current = text }}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+            <CustomInput 
+              icon={<UserIcon strokeWidth={0.75} iconColor={theme.colors.gray} />} 
+              placeholder="Enter your first name"
+              onChangeText={(text) => { fnRef.current = text }}
+              autoCapitalize="words"
+            />
+            <CustomInput 
+              icon={<UserIcon strokeWidth={0.75} iconColor={theme.colors.gray} />} 
+              placeholder="Enter your last name"
+              onChangeText={(text) => { lnRef.current = text }}
+              autoCapitalize="words"
+            />
+            <CustomInput 
+              icon={<UserIcon strokeWidth={0.75} iconColor={theme.colors.gray} />} 
+              placeholder="Enter your username"
+              onChangeText={(text) => { usernameRef.current = text }}
+              autoCapitalize="none"
+            />
+            <CustomInput 
+              icon={<Password strokeWidth={0.75} iconColor={theme.colors.gray} />} 
+              placeholder="Enter your password"
+              secureTextEntry={true}
+              onChangeText={(text) => { passRef.current = text }}
+              autoCapitalize="none"
+            />
+            <CustomInput 
+              icon={<Password strokeWidth={0.75} iconColor={theme.colors.gray} />} 
+              placeholder="Confirm your password"
+              secureTextEntry={true}
+              onChangeText={(text) => { confirmPassRef.current = text }}
+              autoCapitalize="none"
+            />
+          </View>
+
+          <View style={styles.buttonContainer}>
+            <Button 
+              text="Submit" 
+              loading={loading} 
+              onPress={onSubmit}
+            />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    gap: 40,
-    paddingHorizontal: widthP(3)
+    backgroundColor: theme.colors.background,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: widthP(5),
+    paddingBottom: heightP(4),
+  },
+  header: {
+    paddingTop: heightP(2),
+    marginBottom: heightP(4),
   },
   titleText: {
-    fontSize: heightP(5),
+    fontSize: heightP(4),
     fontWeight: theme.fonts.bold,
     color: theme.colors.text,
+    marginTop: heightP(2),
+    lineHeight: heightP(5),
   },
-  spacing: {
-    gap: 20,
+  formContainer: {
+    gap: heightP(2.5),
+    marginBottom: heightP(4),
+  },
+  buttonContainer: {
+    marginTop: 'auto',
+    paddingTop: heightP(2),
   }
-})
+});

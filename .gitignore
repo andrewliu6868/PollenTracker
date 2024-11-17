@@ -45,3 +45,6 @@ backend/backend/__pycache__/
 backend/allergy_tracker/__pycache__/
 
 backend/allergy_tracker/migration/__pycache__/
+
+__pycache__/
+*.pyc

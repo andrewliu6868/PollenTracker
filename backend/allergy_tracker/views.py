@@ -103,7 +103,7 @@ def delete_medication(request, pk):
 @api_view(['POST', 'PUT'])
 def register_device_token(request):
     user = request.user
-    token = request.data.get('token')
+    token = request.data.get('expo_push_token')
 
     if not token:
         return Response({"error": "No token provided"}, status=status.HTTP_400_BAD_REQUEST)

@@ -4,6 +4,16 @@ import Menu from '../assets/icons/Menu'
 import SideDrawer from './SideDrawer'
 import * as Notifications from 'expo-notifications';
 
+// ensure the hanlder will make notifications show up while the app runs
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
+
+
 
 export default function TopBar({title}){
   const [drawerVis, setDrawerVis] = useState(false);
@@ -13,28 +23,28 @@ export default function TopBar({title}){
   // listen for notifications
     useEffect(() => {
       const notificationListener = Notifications.addNotificationReceivedListener(notification => {
-        if (!notiReceived){
-          setNotiReceived(true);
-          Alert.alert(
-            notification.request.content.title,
-            notification.request.content.body,
-            [{ text: 'OK', onPress: () => {
-              console.log('Notification received'); 
+        Alert.alert(
+          notification.request.content.title || 'Notification',
+          notification.request.content.body || 'You have received a new notification',
+          [{
+            text: 'OK',
+            onPress: () => {
+              console.log('Notification alert dismissed');
               setNotiReceived(false);
-            }}]
-          );
-        }
+            },
+          }]
+        );
       });
   
-      const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
-        console.log('Notification clicked:', response);
+    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+        console.log('Notification clicked:', response.notification.request.content);
       });
   
       return () => {
-        Notifications.removeNotificationSubscription(notificationListener);
-        Notifications.removeNotificationSubscription(responseListener);
+        notificationListener.remove();
+        responseListener.remove();
       };
-    }, [notiReceived]);
+    }, []);
 
   return (
     <View style={styles.container}>

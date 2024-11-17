@@ -145,7 +145,7 @@ export default function Home() {
     return (
         <ScreenWrap>
             <LinearGradient colors={[theme.colors.primary, theme.colors.white]} style={styles.container}>
-                <TopBar title='PollenSense' />
+                <TopBar title='PollenPulse' />
             
                 <SafeAreaView style={{ flex: 1, paddingTop: insets.top }}>
                 <FlatList

@@ -19,18 +19,18 @@ import { loginUser } from './api';  // Import the API service
 export default function Login() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-    const emailRef = useRef("");
+    const userRef = useRef("");
     const passRef = useRef("");
     
     const onSubmit = async () => {
-        if (!emailRef.current || !passRef.current) {
+        if (!userRef.current || !passRef.current) {
           Alert.alert('Login Error', 'Please fill in all fields!');
           return;
         }
       
         setLoading(true);
         try {
-          const data = await loginUser(emailRef.current, passRef.current);
+          const data = await loginUser(userRef.current, passRef.current);
       
           if (data?.access && data?.refresh) {
             await AsyncStorage.setItem('accessToken', data.access);
@@ -59,7 +59,7 @@ export default function Login() {
                 <Text style={styles.titleText}>Welcome Back!</Text>
             </View>
             <View style={styles.spacing}>
-                <CustomInput icon = {<Email strokeWidth = {0.75} iconColor={theme.colors.gray} />} placeholder = "Enter your email" onChangeText={(text)=>{emailRef.current = text}}/>
+                <CustomInput icon = {<Email strokeWidth = {0.75} iconColor={theme.colors.gray} />} placeholder = "Enter your username" onChangeText={(text)=>{userRef.current = text}}/>
                 <CustomInput icon = {<Password strokeWidth = {0.75} iconColor={theme.colors.gray}/>} placeholder = "Enter your password" secureTextEntry={true} onChangeText={(text)=> {passRef.current = text}}/>
                 <Text style={styles.noPassword}> Can't remember your password?</Text>
                 <Button text="Submit" loading={loading} onPress={onSubmit}/>

@@ -17,7 +17,7 @@ export default function Entrypage(){
             <View style={styles.container}>
                 <Image style={styles.mainImage} source={require('../assets/EntryImage.png')}/>
                 <View style={{gap: 15}}>
-                    <Text style={styles.title}> AllergyTracker</Text>
+                    <Text style={styles.title}> PollenPulse</Text>
                     <Text style={styles.caption}> Sign up and breathe easier with personalized allergy tracking at your fingertips </Text>
                 </View>
 
