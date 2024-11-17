@@ -44,4 +44,4 @@ backend/backend/__pycache__/
 
 backend/allergy_tracker/__pycache__/
 
-backend/allergy_tracker/migration/__pycache__/
+backend/allergy_tracker/migrations/__pycache__/
