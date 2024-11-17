@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, StyleSheet, FlatList, ActivityIndicator } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import axios from "axios";
 import { AMBEE_API_KEY } from "@env";
-import forecastInfo from '../data/forecastData';
-import {theme } from '../style/theme';
+import { theme } from '../style/theme';
 
 export default function Forecast({ place }) {
   const [forecastData, setData] = useState([]);
@@ -13,7 +12,7 @@ export default function Forecast({ place }) {
 
   const getLocalDate = (timestamp) => {
     const date = new Date(timestamp * 1000);
-    const daysOfWeek = ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"];
+    const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     return daysOfWeek[date.getDay()];
   };
 
@@ -21,9 +20,7 @@ export default function Forecast({ place }) {
     try {
       const res = await axios.get(
         `https://api.ambeedata.com/forecast/v2/pollen/120hr/by-place?place=${place}`,
-        {
-          headers: { "x-api-key": AMBEE_API_KEY },
-        }
+        { headers: { "x-api-key": AMBEE_API_KEY } }
       );
       return res.data.data || [];
     } catch (err) {
@@ -36,9 +33,7 @@ export default function Forecast({ place }) {
     const loadForecast = async () => {
       setLoading(true);
       try {
-        // const data = await fetchData(place);
-        const data = forecastInfo;
-      
+        const data = fetchData(place); 
         const newData = [];
         const firstDays = new Set();
 
@@ -67,18 +62,18 @@ export default function Forecast({ place }) {
   }, [place]);
 
   const renderItem = ({ item }) => (
-    <View style={styles.reminderItem}>
+    <View style={styles.card}>
       <Text style={styles.dayText}>{item.dayOfWeek}</Text>
       <View style={styles.iconRow}>
-        <FontAwesome5 name="tree" size={20} color="#A5D6A7" />
+        <FontAwesome5 name="tree" size={18} color="#A5D6A7" />
         <Text style={styles.levelText}>Tree: {item.treeLevel}</Text>
       </View>
       <View style={styles.iconRow}>
-        <FontAwesome5 name="seedling" size={20} color="#81C784" />
+        <FontAwesome5 name="seedling" size={18} color="#81C784" />
         <Text style={styles.levelText}>Grass: {item.grassLevel}</Text>
       </View>
       <View style={styles.iconRow}>
-        <FontAwesome5 name="spa" size={20} color="#FFB74D" />
+        <FontAwesome5 name="spa" size={18} color="#FFB74D" />
         <Text style={styles.levelText}>Weed: {item.weedLevel}</Text>
       </View>
     </View>
@@ -86,9 +81,9 @@ export default function Forecast({ place }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.forecastTitle}>Pollen Forecast</Text>
+      <Text style={styles.forecastTitle}>5 Day Pollen Forecast</Text>
       {loading ? (
-        <Text style={styles.loadingText}>Loading...</Text>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       ) : error ? (
         <Text style={styles.errorText}>Error: {error}</Text>
       ) : (
@@ -96,10 +91,11 @@ export default function Forecast({ place }) {
           data={forecastData}
           renderItem={renderItem}
           keyExtractor={(item, index) => index.toString()}
-          nestedScrollEnabled={true}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.listContainer}
           ListEmptyComponent={() => (
-            <Text style={styles.noReminders}>No forecast data available</Text>
+            <Text style={styles.noDataText}>No forecast data available</Text>
           )}
         />
       )}
@@ -109,13 +105,11 @@ export default function Forecast({ place }) {
 
 const styles = StyleSheet.create({
   container: {
-    width: "95%",
-    padding: 15,
+    width: "100%",
+    padding: 20,
     backgroundColor: theme.colors.white,
     borderRadius: 15,
     marginBottom: 20,
-    alignItems: "center",
-    justifyContent: "center",
   },
   forecastTitle: {
     fontSize: 20,
@@ -123,38 +117,45 @@ const styles = StyleSheet.create({
     color: theme.colors.black,
     marginBottom: 15,
   },
-  reminderItem: {
+  listContainer: {
+    paddingHorizontal: 10,
+  },
+  card: {
     backgroundColor: "#2E7D32",
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 10,
-    width: "100%",
+    width: 180,
+    borderRadius: 15,
+    padding: 15,
+    marginRight: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   dayText: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#fff",
+    marginBottom: 10,
   },
   iconRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 5,
+    marginBottom: 8,
   },
   levelText: {
     fontSize: 14,
-    color: "#A5D6A7",
-    marginLeft: 10,
-  },
-  loadingText: {
-    color: "#A5D6A7",
-    marginTop: 10,
+    color: "#fff",
+    marginLeft: 8,
   },
   errorText: {
-    color: "#FFB74D",
-    marginTop: 10,
+    color: "#FF5252",
+    textAlign: "center",
+    marginTop: 20,
   },
-  noReminders: {
+  noDataText: {
     color: "#A5D6A7",
-    marginTop: 10,
+    textAlign: "center",
+    marginTop: 20,
   },
 });

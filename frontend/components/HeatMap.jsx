@@ -14,38 +14,6 @@ const DEFAULT_REGION = { // default to san fran for now, change later
     longitudeDelta: 0.3,
 };
 
-// const dataSurroundings = [
-//     {"Count": {"grass_pollen": 0, "tree_pollen": 0, "weed_pollen": 4}, "Risk": {"grass_pollen": "Low", "tree_pollen": "Low", "weed_pollen": "Low"}, "Species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}}, "timezone": "America/New_York", "updatedAt": "2024-11-16T22:00:00.000Z"},
-//     {"Count": {"grass_pollen": 0, "tree_pollen": 0, "weed_pollen": 4}, "Risk": {"grass_pollen": "Low", "tree_pollen": "Low", "weed_pollen": "Low"}, "Species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}}, "timezone": "America/New_York", "updatedAt": "2024-11-16T22:00:00.000Z"},
-//     {"Count": {"grass_pollen": 0, "tree_pollen": 0, "weed_pollen": 4}, "Risk": {"grass_pollen": "Low", "tree_pollen": "Low", "weed_pollen": "Low"}, "Species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}}, "timezone": "America/New_York", "updatedAt": "2024-11-16T22:00:00.000Z"},
-//     {"Count": {"grass_pollen": 0, "tree_pollen": 0, "weed_pollen": 4}, "Risk": {"grass_pollen": "Low", "tree_pollen": "Low", "weed_pollen": "Low"}, "Species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}}, "timezone": "America/New_York", "updatedAt": "2024-11-16T22:00:00.000Z"},
-//     {"Count": {"grass_pollen": 0, "tree_pollen": 0, "weed_pollen": 4}, "Risk": {"grass_pollen": "Low", "tree_pollen": "Low", "weed_pollen": "Low"}, "Species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}}, "timezone": "America/New_York", "updatedAt": "2024-11-16T22:00:00.000Z"},
-//     {"Count": {"grass_pollen": 0, "tree_pollen": 0, "weed_pollen": 4}, "Risk": {"grass_pollen": "Low", "tree_pollen": "Low", "weed_pollen": "Low"}, "Species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}}, "timezone": "America/New_York", "updatedAt": "2024-11-16T22:00:00.000Z"},
-//     {"Count": {"grass_pollen": 0, "tree_pollen": 0, "weed_pollen": 4}, "Risk": {"grass_pollen": "Low", "tree_pollen": "Low", "weed_pollen": "Low"}, "Species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}}, "timezone": "America/New_York", "updatedAt": "2024-11-16T22:00:00.000Z"},
-//     {"Count": {"grass_pollen": 0, "tree_pollen": 0, "weed_pollen": 4}, "Risk": {"grass_pollen": "Low", "tree_pollen": "Low", "weed_pollen": "Low"}, "Species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}}, "timezone": "America/New_York", "updatedAt": "2024-11-16T22:00:00.000Z"},
-//     {"Count": {"grass_pollen": 0, "tree_pollen": 0, "weed_pollen": 4}, "Risk": {"grass_pollen": "Low", "tree_pollen": "Low", "weed_pollen": "Low"}, "Species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}}, "timezone": "America/New_York", "updatedAt": "2024-11-16T22:00:00.000Z"},
-//     {"Count": {"grass_pollen": 0, "tree_pollen": 0, "weed_pollen": 4}, "Risk": {"grass_pollen": "Low", "tree_pollen": "Low", "weed_pollen": "Low"}, "Species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}}, "timezone": "America/New_York", "updatedAt": "2024-11-16T22:00:00.000Z"},
-//     {"Count": {"grass_pollen": 0, "tree_pollen": 0, "weed_pollen": 4}, "Risk": {"grass_pollen": "Low", "tree_pollen": "Low", "weed_pollen": "Low"}, "Species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}}, "timezone": "America/New_York", "updatedAt": "2024-11-16T22:00:00.000Z"},
-//     {"Count": {"grass_pollen": 0, "tree_pollen": 0, "weed_pollen": 4}, "Risk": {"grass_pollen": "Low", "tree_pollen": "Low", "weed_pollen": "Low"}, "Species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}}, "timezone": "America/New_York", "updatedAt": "2024-11-16T22:00:00.000Z"},
-//     {"Count": {"grass_pollen": 0, "tree_pollen": 0, "weed_pollen": 4}, "Risk": {"grass_pollen": "Low", "tree_pollen": "Low", "weed_pollen": "Low"}, "Species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}}, "timezone": "America/New_York", "updatedAt": "2024-11-16T22:00:00.000Z"},
-//     {"Count": {"grass_pollen": 0, "tree_pollen": 0, "weed_pollen": 4}, "Risk": {"grass_pollen": "Low", "tree_pollen": "Low", "weed_pollen": "Low"}, "Species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}}, "timezone": "America/New_York", "updatedAt": "2024-11-16T22:00:00.000Z"},
-//     {"Count": {"grass_pollen": 0, "tree_pollen": 0, "weed_pollen": 4}, "Risk": {"grass_pollen": "Low", "tree_pollen": "Low", "weed_pollen": "Low"}, "Species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}}, "timezone": "America/New_York", "updatedAt": "2024-11-16T22:00:00.000Z"},
-//     {"Count": {"grass_pollen": 0, "tree_pollen": 0, "weed_pollen": 4}, "Risk": {"grass_pollen": "Low", "tree_pollen": "Low", "weed_pollen": "Low"}, "Species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}}, "timezone": "America/New_York", "updatedAt": "2024-11-16T22:00:00.000Z"},
-//     {"Count": {"grass_pollen": 0, "tree_pollen": 0, "weed_pollen": 4}, "Risk": {"grass_pollen": "Low", "tree_pollen": "Low", "weed_pollen": "Low"}, "Species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}}, "timezone": "America/New_York", "updatedAt": "2024-11-16T22:00:00.000Z"},
-// ]
-// const dataMain = 
-// {
-//     "grassCount": 0,
-//     "treeCount": 0,
-//     "weedCount": 4,
-//     "grassRisk": "Low",
-//     "treeRisk": "Low",
-//     "weedRisk": "Low",
-//     "updatedAt": "2024-11-16T22:00:00.000Z",
-//     "species": {"Grass": {"Grass / Poaceae": 0}, "Others": 0, "Tree": {"Ash": 0, "Birch": 0, "Cypress / Juniper / Cedar": 0, "Elm": 0, "Maple": 0, "Mulberry": 0, "Oak": 0, "Pine": 0, "Poplar / Cottonwood": 0}, "Weed": {"Ragweed": 4}},
-//     "updatedAt": "2024-11-16T22:00:00.000Z",
-//     "coordinate": {latitude: props.lat, longitude: props.long},
-// }
 
 export default function HeatMap(props){
     const [pollenData, setPollenData] = useState(null);
@@ -72,7 +40,53 @@ export default function HeatMap(props){
         } else {
             setMapRegion(DEFAULT_REGION);
         }
-    }, [props.lat, props.long]);
+    }, [props.lat]);
+
+    const loadData = async () => {
+        setLoading(true);
+        setDataError(null);
+    
+        if (validateCoordinate(props.lat, props.long)) {
+            setMapRegion({
+                latitude: props.lat,
+                longitude: props.long,
+                latitudeDelta: 0.3,
+                longitudeDelta: 0.3,
+            });
+        }
+    
+        try {
+            const centerData = await fetchData(props.lat, props.long);
+            setPollenData(centerData || null);
+    
+            const points = getPeripheralPoints(props.lat, props.long);
+            if (points.length > 0) {
+                const surroundingResults = await Promise.allSettled(
+                    points.map(async (point) => {
+                        return await fetchData(point.latitude, point.longitude);
+                    })
+                );
+    
+                const validData = surroundingResults
+                    .filter(result => result.status === "fulfilled" && result.value)
+                    .map(result => result.value);
+    
+                setPeripherals(validData);
+            }
+        } catch (err) {
+            console.error('Error fetching pollen data:', err);
+            setError(err);
+            setPollenData(null);
+            setPeripherals([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    // when component mounts or coordinates change, guarantee map region will update
+    useEffect(() => {
+        loadData();
+    }, [props.lat]);
 
     const getPeripheralPoints = (centerLat, centerLng) => {
         if (!validateCoordinate(centerLat, centerLng)){
@@ -96,66 +110,22 @@ export default function HeatMap(props){
         return points;
     }
 
-    const getRandomInt = (min, max) => {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-      };
       
-      const getRandomRisk = () => {
-        const risks = ["Low", "Moderate", "High", "Very High"];
-        return risks[getRandomInt(0, risks.length - 1)];
-      };
-      
-      const generateRandomData = () => {
-        return {
-          "Count": {
-            "grass_pollen": getRandomInt(0, 10),
-            "tree_pollen": getRandomInt(0, 10),
-            "weed_pollen": getRandomInt(0, 10),
-          },
-          "Risk": {
-            "grass_pollen": getRandomRisk(),
-            "tree_pollen": getRandomRisk(),
-            "weed_pollen": getRandomRisk(),
-          },
-          "Species": {
-            "Grass": {
-              "Grass / Poaceae": getRandomInt(0, 10),
-            },
-            "Others": getRandomInt(0, 10),
-            "Tree": {
-              "Ash": getRandomInt(0, 10),
-              "Birch": getRandomInt(0, 10),
-              "Cypress / Juniper / Cedar": getRandomInt(0, 10),
-              "Elm": getRandomInt(0, 10),
-              "Maple": getRandomInt(0, 10),
-              "Mulberry": getRandomInt(0, 10),
-              "Oak": getRandomInt(0, 10),
-              "Pine": getRandomInt(0, 10),
-              "Poplar / Cottonwood": getRandomInt(0, 10),
-            },
-            "Weed": {
-              "Ragweed": getRandomInt(0, 10),
-            },
-          },
-          "timezone": "America/New_York",
-          "updatedAt": new Date().toISOString(),
-        };
-      };
 
     const fetchData = async(lat, long) => {
         if (!validateCoordinate(lat, long)) {
             throw new Error('Invalid coordinates');
         }
         try{
-            // const res = await axios.get(
-            //     `https://api.ambeedata.com/latest/pollen/by-lat-lng?lat=${lat}&lng=${long}`,
-            //     { headers: {'x-api-key': AMBEE_API_KEY, 'Content-Type': 'application/json'}}
-            // );
+            const res = await axios.get(
+            `https://api.ambeedata.com/latest/pollen/by-lat-lng?lat=${lat}&lng=${long}`,
+                { headers: {'x-api-key': AMBEE_API_KEY, 'Content-Type': 'application/json'}}
+            );
             
-            // if (!res.data.data || res.data.data.length === 0) {
-            //     console.warn('No data available for the given location.');
-            //     return null;
-            // }
+            if (!res.data.data || res.data.data.length === 0) {
+                console.warn('No data available for the given location.');
+                 return null;
+             }
 
             // const data = res.data.data[0];
             const data = generateRandomData();

@@ -177,49 +177,63 @@ export const postMedication = async (medication) => {
   }
 
   try {
-    // Get push token first
+    // retrieve push token first
     const expoPushToken = await getExpoPushToken();
     if (!expoPushToken) {
       throw new Error('Failed to get valid Expo Push Token');
     }
 
-    // Add the push token to the medication object
+    // attach push token to object
     const medicationWithToken = {
       ...medication,
       expo_push_token: expoPushToken
     };
 
-    console.log('Sending medication data:', medicationWithToken);
     const response = await api.post('/allergy_tracker/medications/add/', medicationWithToken, {
       headers: { Authorization: `Bearer ${jwtToken}` },
     });
 
     const savedMedication = response.data;
-    console.log('[DEBUG] Medication saved:', savedMedication);
 
-    // scheduler reminders
+      // scheduler reminders
     if (medication.reminder_times?.length > 0) {
       const notificationIds = await scheduleReminderNotifications(
-        medication.reminder_times,
-        savedMedication,
-        medication.start_date,
-        medication.end_date,
+          medication.reminder_times,
+          savedMedication,
+          medication.start_date,
+          medication.end_date
       );
-      
-      if (notificationIds.length > 0) {
-        savedMedication.reminder_notification_ids = notificationIds;
-        await updateMedication(savedMedication.id, updatedMedication);
+
+      console.log('[DEBUG] Scheduled Notification IDs:', notificationIds);
+
+        if (notificationIds?.length > 0) {
+          savedMedication.reminder_notification_ids = notificationIds;
+
+          // update the medication entry in the backend with the new IDs
+          const updateResponse = await api.put(
+            `/allergy_tracker/medications/${savedMedication.id}/`,
+            { reminder_notification_ids: notificationIds },
+            { headers: { Authorization: `Bearer ${jwtToken}` } }
+          );
+        }
       }
-    }
-    // schedule refill
-    if(medication.refill_reminder && medication.refillDate){
-      const refillId = await scheduleRefillNotification(medication.refillDate, savedMedication);
-      savedMedication.refill_notification_id = refillId;
-    }
 
-    await updateMedication(savedMedication.id, updatedMedication);
+      // schedule refill notification if needed
+      if (medication.refill_reminder && medication.refill_date) {
+        const refillNotificationId = await scheduleRefillNotification(medication.refill_date, savedMedication);
 
-    return savedMedication;
+        if (refillNotificationId) {
+          savedMedication.refill_notification_id = refillNotificationId;
+
+          await api.put(
+            `/allergy_tracker/medications/${savedMedication.id}/`,
+            { refill_notification_id: refillNotificationId },
+            { headers: { Authorization: `Bearer ${jwtToken}` } }
+          );
+        }
+      }
+
+      return savedMedication;
   } catch (error) {
     console.error('Error adding medication:', error.message);
     throw error;
@@ -330,19 +344,6 @@ export const registerDeviceToken = async () => {
   }
 };
 
-
-
-
-// function to request notification permissions from user
-const requestNotificationPermissions = async () => {
-  const { status } = await Notifications.getPermissionsAsync();
-  if (status !== 'granted') {
-    const { status: newStatus } = await Notifications.requestPermissionsAsync();
-    if (newStatus !== 'granted') {
-      console.warn('Notifications permissions not granted');
-    }
-  }
-};
 
 export const scheduleReminderNotifications = async (reminderTimes, medication, startDate, endDate) => {
   const expoPushToken = await getExpoPushToken();

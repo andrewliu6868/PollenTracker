@@ -1,10 +1,10 @@
-import { View, Text, TextInput, Button, ScrollView, StyleSheet, Modal, TouchableOpacity, Switch, Platform, KeyboardAvoidingView } from 'react-native';
+import { View, Text, TextInput, ScrollView, StyleSheet, Modal, TouchableOpacity, Switch, Platform, KeyboardAvoidingView } from 'react-native';
 import React, { useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { postMedication, scheduleReminderNotifications, scheduleRefillNotification, updateMedication } from './api.js';
+import { postMedication } from './api.js';
 
 export default function AddMedication({ isVisible, onClose }) {
   const [medName, setMedName] = useState('');
@@ -55,26 +55,14 @@ export default function AddMedication({ isVisible, onClose }) {
           }
         }
       };
-
-    const showTimePicker = (index) => {
-        if (Platform.OS === 'android') {
+      const showTimePicker = (index) => {
+        setSelectedPickerIndex(index);
+        if (Platform.OS === 'ios') {
           setShowAndroidTimePicker(true);
-          setSelectedPickerIndex(index);
         } else {
-          setSelectedPickerIndex(index);
+          setShowAndroidTimePicker(true);
         }
       };
-
-      const handleTimeChange = (event, selectedTime, index) => {
-        if (Platform.OS === 'android') {
-          setShowAndroidTimePicker(false);
-        }
-        
-        if (selectedTime) {
-          handleReminderTimeChange(index, event, selectedTime);
-        }
-      };
-
       const renderDatePicker = (value, onChange, label) => {
         if (Platform.OS === 'ios') {
           return (
@@ -123,6 +111,10 @@ export default function AddMedication({ isVisible, onClose }) {
 
   // set newReminderTimes
   const handleReminderTimeChange = (index, event, selectedTime) => {
+    setShowAndroidTimePicker(false); // Close picker on both platforms
+  
+    if (Platform.OS === 'ios' && !selectedTime) return; // Handle iOS dismissal
+  
     if (selectedTime) {
       setReminderTimes((prevTimes) => {
         const updatedTimes = [...prevTimes];
@@ -155,12 +147,13 @@ export default function AddMedication({ isVisible, onClose }) {
       return;
     }
   
+    // ensure valid start and end dates are selected
     if (endDate < startDate) {
       alert('Error: End date cannot be before the start date.');
       return;
     }
   
-    // Prepare the medication object
+    // format the object for the serializer
     const newMedication = {
       med_name: medName,
       description: medDesc,
@@ -179,37 +172,6 @@ export default function AddMedication({ isVisible, onClose }) {
   
     try {
       const addedMedication = await postMedication(newMedication);
-  
-      let reminderNotificationIds = [];
-      let refillNotificationId = null;
-  
-      if (reminderTimes.length > 0) {
-        const reminderDates = reminderTimes.map((time) => new Date(time));
-        reminderNotificationIds = await scheduleReminderNotifications(
-          reminderDates,
-          addedMedication,
-          startDate,
-          endDate
-        );
-      }
-  
-      if (refillReminder && refillDate) {
-        refillNotificationId = await scheduleRefillNotification(
-          new Date(newMedication.refill_date),
-          addedMedication
-        );
-      }
-  
-      console.log('Scheduled Reminder IDs:', reminderNotificationIds);
-      console.log('Scheduled Refill ID:', refillNotificationId);
-  
-      const updatedMedication = {
-        ...addedMedication,
-        reminder_notification_ids: reminderNotificationIds,
-        refill_notification_id: refillNotificationId,
-      };
-  
-      await updateMedication(addedMedication.id, updatedMedication);
   
       alert('Medication added and notifications scheduled successfully!');
   
@@ -234,10 +196,10 @@ export default function AddMedication({ isVisible, onClose }) {
   return (
     <Modal visible={isVisible} transparent={false} animationType="slide" onRequestClose={onClose}>
     <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top }]}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardAvoidingView}
-      >
+        <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={[styles.keyboardAvoidingView, { paddingBottom: insets.bottom }]}
+        >
         <View style={styles.modalContent}>
           <View style={styles.header}>
             <Text style={styles.title}>Add Medication</Text>
@@ -327,30 +289,42 @@ export default function AddMedication({ isVisible, onClose }) {
               <Text style={[styles.inputLabel, { marginTop: 16 }]}>Reminder Times</Text>
                 <View style={styles.timePickersContainer}>
                     {reminderTimes.map((time, index) => (
-                    <TouchableOpacity
+                        <TouchableOpacity
                         key={index}
                         style={styles.timePickerButton}
                         onPress={() => showTimePicker(index)}
-                    >
+                        >
                         <Text style={styles.timePickerButtonText}>
-                        {time instanceof Date
+                            {time instanceof Date
                             ? time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                             : `Set Time ${index + 1}`}
                         </Text>
-                    </TouchableOpacity>
+                        </TouchableOpacity>
                     ))}
-                </View>
+                    </View>
+                {Platform.OS === 'ios' && selectedPickerIndex !== null && (
+                    <DateTimePicker
+                        value={reminderTimes[selectedPickerIndex] || new Date()}
+                        mode="time"
+                        is24Hour={false}
+                        display="spinner"
+                        onChange={(event, selectedTime) =>
+                        handleReminderTimeChange(selectedPickerIndex, event, selectedTime)
+                        }
+                    />
+                    )}
 
-            {Platform.OS === 'android' && showAndroidTimePicker && (
-                <DateTimePicker
-                value={reminderTimes[selectedPickerIndex] || new Date()}
-                mode="time"
-                is24Hour={false}
-                display="default"
-                onChange={(event, selectedTime) => 
-                    handleTimeChange(event, selectedTime, selectedPickerIndex)
-                }/>
-            )}
+                {Platform.OS === 'android' && showAndroidTimePicker && (
+                    <DateTimePicker
+                        value={reminderTimes[selectedPickerIndex] || new Date()}
+                        mode="time"
+                        is24Hour={false}
+                        display="default"
+                        onChange={(event, selectedTime) =>
+                        handleReminderTimeChange(selectedPickerIndex, event, selectedTime)
+                        }
+                    />
+                    )}
             </View>
 
             <View style={styles.section}>
@@ -360,7 +334,6 @@ export default function AddMedication({ isVisible, onClose }) {
                 {renderDatePicker(endDate, handleDateChange, 'end')}
               </View>
 
-              {/* Android Date Picker Modal */}
               {Platform.OS === 'android' && showAndroidDatePicker && (
                 <DateTimePicker
                   value={
@@ -563,17 +536,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    overflow: 'hidden', // This ensures the picker stays within bounds
+    overflow: 'hidden', 
   },
   pickerContainer: {
     backgroundColor: '#f8f8f8',
     ...Platform.select({
       ios: {
-        // iOS specific picker container styling
         paddingVertical: 8,
       },
       android: {
-        // Android specific picker container styling
         paddingHorizontal: 16,
       },
     }),
@@ -581,10 +552,10 @@ const styles = StyleSheet.create({
   picker: {
     ...Platform.select({
       ios: {
-        height: 160, // Fixed height for iOS
+        height: 160,
       },
       android: {
-        height: 48, // Fixed height for Android
+        height: 48, 
       },
     }),
   },

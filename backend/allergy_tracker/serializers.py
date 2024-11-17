@@ -50,9 +50,9 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
-
+    
 class MedicationSerializer(serializers.ModelSerializer):
-    expo_push_token = serializers.CharField(write_only=True, required=False)  # Add this line
+    expo_push_token = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = Medication
@@ -64,41 +64,52 @@ class MedicationSerializer(serializers.ModelSerializer):
         read_only_fields = ['user']
 
     def create(self, validated_data):
-        # Extract expo_push_token before saving the medication
         expo_push_token = validated_data.pop('expo_push_token', None)
-
-        # Associate medication with the current user
         validated_data['user'] = self.context['request'].user
+
+        # Create the medication instance
         medication = super().create(validated_data)
 
         # Retrieve the token from request headers
         raw_token = self.context['request'].headers.get('Authorization')
         if not raw_token:
             raise ValueError("Missing Authorization token")
-
+        
         token = raw_token.replace('Bearer ', '') if 'Bearer' in raw_token else raw_token
-
         if not token:
             raise ValueError("Invalid Authorization token")
 
-        # Schedule notifications
         try:
-            medication.reminder_notification_ids = schedule_reminder_notifications(
-                validated_data['reminder_times'],
-                medication,
-                validated_data['start_date'],
-                validated_data['end_date'],
-                expo_push_token  # Use the push token here
-            )
+            # Schedule reminder notifications
+            if validated_data.get('reminder_times'):
+                reminder_notification_ids = schedule_reminder_notifications(
+                    validated_data['reminder_times'],
+                    medication,
+                    validated_data['start_date'],
+                    validated_data['end_date'],
+                    expo_push_token
+                )
 
-            if validated_data['refill_reminder'] and validated_data['refill_date']:
-                medication.refill_notification_id = schedule_refill_notification(
+                # Ensure the notification IDs are saved
+                if reminder_notification_ids:
+                    medication.reminder_notification_ids = reminder_notification_ids
+                    print("[DEBUG] Scheduled Reminder Notification IDs:", reminder_notification_ids)
+
+            # Schedule refill notification if required
+            if validated_data.get('refill_reminder') and validated_data.get('refill_date'):
+                refill_notification_id = schedule_refill_notification(
                     validated_data['refill_date'],
                     medication,
                     expo_push_token
                 )
 
+                if refill_notification_id:
+                    medication.refill_notification_id = refill_notification_id
+                    print("[DEBUG] Scheduled Refill Notification ID:", refill_notification_id)
+
+            # Explicitly save the medication after assigning notification IDs
             medication.save()
+
         except Exception as e:
             print(f"Error scheduling notifications: {e}")
             raise serializers.ValidationError("Failed to schedule notifications")

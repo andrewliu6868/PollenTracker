@@ -23,13 +23,14 @@ export default function EditMedication({ isVisible, onClose, medication, onSaveE
 
 
   const insets = useSafeAreaInsets();
-      // cross-platform rendering
-      const showDatePicker = (fieldName) => {
-        if (Platform.OS === 'android') {
-          setShowAndroidDatePicker(true);
-          setCurrentDatePickerField(fieldName);
-        }
-    };
+  
+  // cross-platform rendering
+  const showDatePicker = (fieldName) => {
+      if (Platform.OS === 'android') {
+        setShowAndroidDatePicker(true);
+        setCurrentDatePickerField(fieldName);
+      }
+  };
 
     const handleDateChange = (event, selectedDate) => {
         if (Platform.OS === 'android') {
@@ -51,25 +52,15 @@ export default function EditMedication({ isVisible, onClose, medication, onSaveE
         }
       };
 
-    const showTimePicker = (index) => {
-        if (Platform.OS === 'android') {
+      const showTimePicker = (index) => {
+        setSelectedPickerIndex(index);
+        if (Platform.OS === 'ios') {
+          // Directly show the DateTimePicker for iOS
           setShowAndroidTimePicker(true);
-          setSelectedPickerIndex(index);
         } else {
-          setSelectedPickerIndex(index);
+          setShowAndroidTimePicker(true);
         }
       };
-
-      const handleTimeChange = (event, selectedTime, index) => {
-        if (Platform.OS === 'android') {
-          setShowAndroidTimePicker(false);
-        }
-        
-        if (selectedTime) {
-          handleReminderTimeChange(index, event, selectedTime);
-        }
-      };
-
       const renderDatePicker = (value, onChange, label) => {
         if (Platform.OS === 'ios') {
           return (
@@ -225,6 +216,10 @@ export default function EditMedication({ isVisible, onClose, medication, onSaveE
 
   // event handler for reminder times changes
   const handleReminderTimeChange = (index, event, selectedTime) => {
+    setShowAndroidTimePicker(false); 
+  
+    if (Platform.OS === 'ios' && !selectedTime) return; 
+  
     if (selectedTime) {
       setReminderTimes((prevTimes) => {
         const updatedTimes = [...prevTimes];
@@ -239,7 +234,7 @@ export default function EditMedication({ isVisible, onClose, medication, onSaveE
       <SafeAreaView style={{ paddingTop: insets.top, flex: 1 }}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardAvoidingView}
+        style={[styles.keyboardAvoidingView, { paddingBottom: insets.bottom }]}
       >
       <View style={styles.modalContent}>
           <View style={styles.header}>
@@ -302,33 +297,45 @@ export default function EditMedication({ isVisible, onClose, medication, onSaveE
                     </View>
                 </View>
 
-              <Text style={[styles.inputLabel, { marginTop: 16 }]}>Reminder Times</Text>
+                <Text style={[styles.inputLabel, { marginTop: 16 }]}>Reminder Times</Text>
                 <View style={styles.timePickersContainer}>
                     {reminderTimes.map((time, index) => (
-                    <TouchableOpacity
+                        <TouchableOpacity
                         key={index}
                         style={styles.timePickerButton}
                         onPress={() => showTimePicker(index)}
-                    >
+                        >
                         <Text style={styles.timePickerButtonText}>
-                        {time instanceof Date
+                            {time instanceof Date
                             ? time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                             : `Set Time ${index + 1}`}
                         </Text>
-                    </TouchableOpacity>
+                        </TouchableOpacity>
                     ))}
-                </View>
+                    </View>
+                {Platform.OS === 'ios' && selectedPickerIndex !== null && (
+                    <DateTimePicker
+                        value={reminderTimes[selectedPickerIndex] || new Date()}
+                        mode="time"
+                        is24Hour={false}
+                        display="spinner"
+                        onChange={(event, selectedTime) =>
+                        handleReminderTimeChange(selectedPickerIndex, event, selectedTime)
+                        }
+                    />
+                    )}
 
-            {Platform.OS === 'android' && showAndroidTimePicker && (
-                <DateTimePicker
-                value={reminderTimes[selectedPickerIndex] || new Date()}
-                mode="time"
-                is24Hour={false}
-                display="default"
-                onChange={(event, selectedTime) => 
-                    handleTimeChange(event, selectedTime, selectedPickerIndex)
-                }/>
-            )}
+                {Platform.OS === 'android' && showAndroidTimePicker && (
+                    <DateTimePicker
+                        value={reminderTimes[selectedPickerIndex] || new Date()}
+                        mode="time"
+                        is24Hour={false}
+                        display="default"
+                        onChange={(event, selectedTime) =>
+                        handleReminderTimeChange(selectedPickerIndex, event, selectedTime)
+                        }
+                    />
+                    )}
             </View>
 
             <View style={styles.section}>
@@ -368,12 +375,14 @@ export default function EditMedication({ isVisible, onClose, medication, onSaveE
               {refillReminder && renderDatePicker(refillDate, handleDateChange, 'refill')}
             </View>
 
+          <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
               <Text style={styles.saveButtonText}>Save Medication</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
               <Text style={styles.deleteButtonText}>Delete Medication</Text>
             </TouchableOpacity>
+          </View>
           </ScrollView>
       </View>
       </KeyboardAvoidingView>
@@ -598,11 +607,10 @@ picker: {
   },
   saveButton: {
     backgroundColor: '#2196F3',
-    padding: 16,
+    padding: 14, // Reduced padding
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 32,
+    marginBottom: 12, // Reduced margin
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -616,12 +624,11 @@ picker: {
     }),
   },
   deleteButton: {
-    backgroundColor: '#F44336', // Material Design red
-    padding: 16,
+    backgroundColor: '#F44336',
+    padding: 14, // Reduced padding
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 32,
+    marginBottom: 20, // Reduced margin
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -636,12 +643,17 @@ picker: {
   },
   saveButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 16, // Slightly smaller font
     fontWeight: '600',
   },
   deleteButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: '#fff',
+    fontSize: 16, // Slightly smaller font
+    fontWeight: '600',
   },
+  buttonContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 12, // Use gap for spacing between buttons
+  }
 });
